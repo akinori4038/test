@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>海洋 + 天気データ表示</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .info {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 1rem;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: #fff;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 4px 6px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      text-align: right;
+    }
+
+    th {
+      background: #e9f2ff;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+    }
+
+    .table-wrapper {
+      max-height: 70vh;
+      overflow: auto;
+      border: 1px solid #ccc;
+      background: #fff;
+    }
+
+    .highlight {
+      background: #fff7cc;
+    }
+
+    /* ★ 強風色付け */
+    .wind-strong {
+      background: #ffe0b3 !important;
+    }
+
+    .wind-very-strong {
+      background: #ffb3b3 !important;
+    }
+
+    #reload-btn {
+      padding: 6px 14px;
+      font-size: 0.9rem;
+      margin-right: 10px;
+      cursor: pointer;
+      background: #0078d4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+
+    #reload-btn:hover {
+      background: #005fa3;
+    }
+
+    #updated-time {
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    .error {
+      color: #b00020;
+      margin-top: 0.5rem;
+    }
+
+    .loading {
+      font-size: 0.9rem;
+      color: #333;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>海洋 + 天気データ（横浜近海）</h1>
+  <div class="info">Marine API と Forecast API を統合して表示します。</div>
+
+  <button id="reload-btn" onclick="loadAll()">更新</button>
+  <span id="updated-time">最終更新：--/-- --:--:--</span>
+
+  <div id="status" class="loading">データ取得中...</div>
+  <div class="table-wrapper" id="table-container"></div>
+
+  <script>
+    /* Marine API */
+    const marineURL =
+      "https://marine-api.open-meteo.com/v1/marine" +
+      "?latitude=35.17&longitude=139.592&timezone=Asia%2FTokyo" +
+      "&forecast_days=3&wind_speed_unit=ms" +
+      "&hourly=" +
+      [
+        "wave_height", "wave_direction", "wave_period",
+        "wind_wave_height", "wind_wave_direction", "wind_wave_period",
+        "swell_wave_height", "swell_wave_direction", "swell_wave_period",
+        "sea_level_height_msl", "sea_surface_temperature",
+        "ocean_current_direction"
+      ].join(",");
+
+    /* Forecast API（風速を m/s に統一） */
+    const weatherURL =
+      "https://api.open-meteo.com/v1/forecast" +
+      "?latitude=35.17&longitude=139.592&timezone=Asia%2FTokyo" +
+      "&forecast_days=3" +
+      "&wind_speed_unit=ms" +
+      "&hourly=weathercode,temperature_2m,windspeed_10m,winddirection_10m";
+
+    const statusEl = document.getElementById("status");
+    const tableContainer = document.getElementById("table-container");
+    const updatedTimeEl = document.getElementById("updated-time");
+
+    function formatDate(d) {
+      const pad = (n) => String(n).padStart(2, "0");
+      return (
+        d.getFullYear() + "/" + pad(d.getMonth() + 1) + "/" + pad(d.getDate()) +
+        " " + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds())
+      );
+    }
+
+    async function loadAll() {
+      statusEl.textContent = "データ取得中...";
+      statusEl.classList.remove("error");
+
+      try {
+        const [marineRes, weatherRes] = await Promise.all([
+          fetch(marineURL),
+          fetch(weatherURL)
+        ]);
+
+        if (!marineRes.ok || !weatherRes.ok)
+          throw new Error("APIエラー");
+
+        const marine = await marineRes.json();
+        const weather = await weatherRes.json();
+
+        renderTable(marine, weather);
+
+        updatedTimeEl.textContent = "最終更新：" + formatDate(new Date());
+        statusEl.textContent = "データ取得完了";
+
+      } catch (err) {
+        statusEl.textContent = "データ取得に失敗しました: " + err.message;
+        statusEl.classList.add("error");
+      }
+    }
+
+    /* 天気アイコン */
+    function weatherIcon(code) {
+      const map = {
+        0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
+        45: "🌫️", 48: "🌫️",
+        51: "🌦️", 61: "🌧️", 71: "🌨️",
+        95: "⛈️"
+      };
+      return map[code] || "❓";
+    }
+
+    /* ★ 風下方向の角度に変換 */
+    function toDownwind(deg) {
+      return (deg + 180) % 360;
+    }
+
+    /* ★ 角度 → 矢印 */
+    function arrowFromDeg(deg) {
+      if (deg >= 337.5 || deg < 22.5) return "↑";
+      if (deg < 67.5) return "↗";
+      if (deg < 112.5) return "→";
+      if (deg < 157.5) return "↘";
+      if (deg < 202.5) return "↓";
+      if (deg < 247.5) return "↙";
+      if (deg < 292.5) return "←";
+      return "↖";
+    }
+
+    /* ★ Marine の方向も矢印化 */
+    function arrowWithDeg(deg) {
+      const d = toDownwind(deg);
+      return arrowFromDeg(d) + " " + d + "°";
+    }
+
+    function renderTable(marine, weather) {
+      const h1 = marine.hourly;
+      const h2 = weather.hourly;
+
+      if (!h1?.time || !h2?.time) {
+        statusEl.textContent = "データ形式エラー";
+        statusEl.classList.add("error");
+        return;
+      }
+
+      const len = h1.time.length;
+
+      const columns = [
+        { key: "time", label: "時刻" },
+
+        // 天気データ
+        { key: "icon", label: "天気" },
+        { key: "temperature_2m", label: "気温 (°C)" },
+        { key: "windspeed_10m", label: "風速 (m/s)" },
+        { key: "winddirection_arrow", label: "風向" },
+
+        // Marine データ（矢印化）
+        { key: "wave_direction_arrow", label: "波向" },
+        { key: "wind_wave_direction_arrow", label: "風波向" },
+        { key: "swell_wave_direction_arrow", label: "うねり向" },
+
+        { key: "wave_height", label: "波高 (m)" },
+        { key: "wave_period", label: "波周期 (s)" },
+        { key: "wind_wave_height", label: "風波高 (m)" },
+        { key: "wind_wave_period", label: "風波周期 (s)" },
+        { key: "swell_wave_height", label: "うねり高 (m)" },
+        { key: "swell_wave_period", label: "うねり周期 (s)" },
+        { key: "sea_level_height_msl", label: "海面高度 (m)" },
+        { key: "sea_surface_temperature", label: "海面水温 (°C)" },
+        { key: "ocean_current_direction", label: "海流向 (°)" }
+      ];
+
+      let html = "<table><thead><tr>";
+      for (const col of columns) html += `<th>${col.label}</th>`;
+      html += "</tr></thead><tbody>";
+
+      for (let i = 0; i < len; i++) {
+        const timeStr = h1.time[i];
+        const hour = Number(timeStr.substring(11, 13));
+        const highlight = (hour >= 9 && hour <= 15) ? " class='highlight'" : "";
+
+        html += `<tr${highlight}>`;
+
+        for (const col of columns) {
+          let value = "";
+
+          if (col.key === "time") value = timeStr;
+
+          else if (col.key === "icon") value = weatherIcon(h2.weathercode[i]);
+
+          else if (col.key === "winddirection_arrow") {
+            const deg = h2.winddirection_10m[i];
+            const d = toDownwind(deg);
+            value = arrowFromDeg(d) + " " + d + "°";
+          }
+
+          else if (col.key === "wave_direction_arrow")
+            value = arrowWithDeg(h1.wave_direction[i]);
+
+          else if (col.key === "wind_wave_direction_arrow")
+            value = arrowWithDeg(h1.wind_wave_direction[i]);
+
+          else if (col.key === "swell_wave_direction_arrow")
+            value = arrowWithDeg(h1.swell_wave_direction[i]);
+
+          else if (h2[col.key]) value = h2[col.key][i];
+          else if (h1[col.key]) value = h1[col.key][i];
+
+          /* ★ 強風色付け */
+          let cellClass = "";
+          if (col.key === "windspeed_10m") {
+            const ws = h2.windspeed_10m[i];
+            if (ws >= 15) cellClass = "wind-very-strong";
+            else if (ws >= 10) cellClass = "wind-strong";
+          }
+
+          html += `<td class="${cellClass}">${value ?? ""}</td>`;
+        }
+
+        html += "</tr>";
+      }
+
+      html += "</tbody></table>";
+      tableContainer.innerHTML = html;
+    }
+
+    loadAll();
+  </script>
+</body>
+
+</html>
