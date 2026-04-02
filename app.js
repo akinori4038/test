@@ -1,4 +1,19 @@
-// 初期地図（東京駅付近）
+// --- SVG船アイコン ---
+const shipSvg = `
+<svg width="60" height="60" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <path d="M50 5 L80 85 L50 70 L20 85 Z" fill="#1e90ff" stroke="#003f6b" stroke-width="4"/>
+  <ellipse cx="50" cy="45" rx="18" ry="8" fill="#ffffff" stroke="#003f6b" stroke-width="3"/>
+  <line x1="50" y1="5" x2="50" y2="25" stroke="#ffffff" stroke-width="3"/>
+</svg>
+`;
+
+const shipIcon = L.icon({
+  iconUrl: "data:image/svg+xml;base64," + btoa(shipSvg),
+  iconSize: [50, 50],
+  iconAnchor: [25, 25],
+});
+
+// --- 地図初期化 ---
 const map = L.map('map').setView([35.681236, 139.767125], 5);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -7,60 +22,44 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 let marker = null;
-const statusEl = document.getElementById('status');
-const btn = document.getElementById('locBtn');
 
-function setStatus(msg) {
-  statusEl.textContent = msg;
-}
+// --- トラックライン ---
+let trackCoords = [];
+let trackLine = L.polyline([], { color: 'red', weight: 3 }).addTo(map);
 
-function centerToCurrentPosition() {
-  if (!navigator.geolocation) {
-    setStatus('この端末・ブラウザはGeolocation APIに対応していません。');
-    return;
+// --- 位置更新処理 ---
+function onLocationUpdate(pos) {
+  const lat = pos.coords.latitude;
+  const lng = pos.coords.longitude;
+  const heading = pos.coords.heading; // 0〜360
+
+  // マーカー更新
+  if (!marker) {
+    marker = L.marker([lat, lng], {
+      icon: shipIcon,
+      rotationAngle: heading || 0,
+      rotationOrigin: 'center center'
+    }).addTo(map);
+  } else {
+    marker.setLatLng([lat, lng]);
+    marker.setRotationAngle(heading || 0);
   }
 
-  btn.disabled = true;
-  setStatus('現在地を取得しています…');
+  // トラック追加
+  trackCoords.push([lat, lng]);
+  trackLine.setLatLngs(trackCoords);
 
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-
-      if (marker) {
-        marker.setLatLng([lat, lng]);
-      } else {
-        marker = L.marker([lat, lng]).addTo(map);
-      }
-
-      map.setView([lat, lng], 16);
-
-      setStatus(`現在地を取得しました（緯度: ${lat.toFixed(5)}, 経度: ${lng.toFixed(5)}）。`);
-      btn.disabled = false;
-    },
-    (err) => {
-      switch (err.code) {
-        case err.PERMISSION_DENIED:
-          setStatus('位置情報の利用が拒否されました。ブラウザの設定で許可してください。');
-          break;
-        case err.POSITION_UNAVAILABLE:
-          setStatus('位置情報を取得できませんでした。電波状況やGPS設定を確認してください。');
-          break;
-        case err.TIMEOUT:
-          setStatus('位置情報の取得がタイムアウトしました。再度お試しください。');
-          break;
-        default:
-          setStatus('位置情報の取得中に不明なエラーが発生しました。');
-      }
-      btn.disabled = false;
-    },
-    {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0
-    }
-  );
+  // 地図追従
+  map.setView([lat, lng], 17);
 }
 
-btn.addEventListener('click', centerToCurrentPosition);
+function onError(err) {
+  console.error(err);
+}
+
+// --- 現在地追従開始 ---
+navigator.geolocation.watchPosition(onLocationUpdate, onError, {
+  enableHighAccuracy: true,
+  maximumAge: 0,
+  timeout: 10000
+});

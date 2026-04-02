@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>現在地マップ</title>
+  <title>海上GPSビューア（現在地＋船アイコン）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Leaflet CSS -->
@@ -18,14 +18,20 @@
   <div id="app">
     <div id="map"></div>
     <div class="controls">
-      <button id="locBtn" class="btn" type="button">現在地を取得して中心にする</button>
-      <div id="status" class="status">位置情報の許可をすると、現在地を中心に地図が表示されます。</div>
+      <button id="locBtn" class="btn" type="button">追従開始 / 再開</button>
+      <button id="stopBtn" class="btn" type="button" style="margin-left:8px; background:#666;">追従停止</button>
+      <div id="status" class="status">
+        位置情報の許可をすると、現在地を中心に船アイコンと軌跡が表示されます。
+      </div>
     </div>
   </div>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- 回転マーカー用プラグイン -->
+  <script src="https://rawcdn.githack.com/bbecquet/Leaflet.RotatedMarker/master/leaflet.rotatedMarker.js"></script>
 
   <!-- 自分のJS -->
   <script src="app.js"></script>
