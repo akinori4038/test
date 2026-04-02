@@ -3,302 +3,148 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>海洋 + 天気データ表示</title>
+  <title>現在地マップ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
   <style>
+    html,
     body {
-      font-family: system-ui, sans-serif;
-      margin: 20px;
-      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    h1 {
-      font-size: 1.4rem;
-      margin-bottom: 0.5rem;
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
 
-    .info {
-      font-size: 0.9rem;
-      color: #555;
-      margin-bottom: 1rem;
+    #map {
+      flex: 1;
     }
 
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background: #fff;
+    .controls {
+      padding: 8px 12px;
+      border-top: 1px solid #ddd;
+      background: #f8f8f8;
     }
 
-    th,
-    td {
-      border: 1px solid #ccc;
-      padding: 4px 6px;
-      font-size: 0.8rem;
-      white-space: nowrap;
-      text-align: right;
-    }
-
-    th {
-      background: #e9f2ff;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    th:first-child,
-    td:first-child {
-      text-align: left;
-    }
-
-    .table-wrapper {
-      max-height: 70vh;
-      overflow: auto;
-      border: 1px solid #ccc;
-      background: #fff;
-    }
-
-    .highlight {
-      background: #fff7cc;
-    }
-
-    /* ★ 強風色付け */
-    .wind-strong {
-      background: #ffe0b3 !important;
-    }
-
-    .wind-very-strong {
-      background: #ffb3b3 !important;
-    }
-
-    #reload-btn {
-      padding: 6px 14px;
-      font-size: 0.9rem;
-      margin-right: 10px;
-      cursor: pointer;
-      background: #0078d4;
-      color: white;
+    .btn {
+      padding: 10px 16px;
+      font-size: 16px;
+      border-radius: 6px;
       border: none;
-      border-radius: 4px;
+      background: #0078d4;
+      color: #fff;
+      font-weight: 600;
     }
 
-    #reload-btn:hover {
-      background: #005fa3;
+    .btn:disabled {
+      opacity: 0.6;
     }
 
-    #updated-time {
-      font-size: 0.9rem;
-      color: #333;
-    }
-
-    .error {
-      color: #b00020;
-      margin-top: 0.5rem;
-    }
-
-    .loading {
-      font-size: 0.9rem;
-      color: #333;
+    .status {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #555;
+      word-break: break-all;
     }
   </style>
 </head>
 
 <body>
-  <h1>海洋 + 天気データ（横浜近海）</h1>
-  <div class="info">Marine API と Forecast API を統合して表示します。</div>
+  <div id="app">
+    <div id="map"></div>
+    <div class="controls">
+      <button id="locBtn" class="btn" type="button">現在地を取得して中心にする</button>
+      <div id="status" class="status">位置情報の許可をすると、現在地を中心に地図が表示されます。</div>
+    </div>
+  </div>
 
-  <button id="reload-btn" onclick="loadAll()">更新</button>
-  <span id="updated-time">最終更新：--/-- --:--:--</span>
-
-  <div id="status" class="loading">データ取得中...</div>
-  <div class="table-wrapper" id="table-container"></div>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <script>
-    /* Marine API */
-    const marineURL =
-      "https://marine-api.open-meteo.com/v1/marine" +
-      "?latitude=35.17&longitude=139.592&timezone=Asia%2FTokyo" +
-      "&forecast_days=3&wind_speed_unit=ms" +
-      "&hourly=" +
-      [
-        "wave_height", "wave_direction", "wave_period",
-        "wind_wave_height", "wind_wave_direction", "wind_wave_period",
-        "swell_wave_height", "swell_wave_direction", "swell_wave_period",
-        "sea_level_height_msl", "sea_surface_temperature",
-        "ocean_current_direction"
-      ].join(",");
+    // 初期地図（とりあえず世界地図）
+    const map = L.map('map').setView([35.681236, 139.767125], 5); // 東京駅あたりを初期中心に
 
-    /* Forecast API（風速を m/s に統一） */
-    const weatherURL =
-      "https://api.open-meteo.com/v1/forecast" +
-      "?latitude=35.17&longitude=139.592&timezone=Asia%2FTokyo" +
-      "&forecast_days=3" +
-      "&wind_speed_unit=ms" +
-      "&hourly=weathercode,temperature_2m,windspeed_10m,winddirection_10m";
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
 
-    const statusEl = document.getElementById("status");
-    const tableContainer = document.getElementById("table-container");
-    const updatedTimeEl = document.getElementById("updated-time");
+    let marker = null;
+    const statusEl = document.getElementById('status');
+    const btn = document.getElementById('locBtn');
 
-    function formatDate(d) {
-      const pad = (n) => String(n).padStart(2, "0");
-      return (
-        d.getFullYear() + "/" + pad(d.getMonth() + 1) + "/" + pad(d.getDate()) +
-        " " + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds())
-      );
+    function setStatus(msg) {
+      statusEl.textContent = msg;
     }
 
-    async function loadAll() {
-      statusEl.textContent = "データ取得中...";
-      statusEl.classList.remove("error");
-
-      try {
-        const [marineRes, weatherRes] = await Promise.all([
-          fetch(marineURL),
-          fetch(weatherURL)
-        ]);
-
-        if (!marineRes.ok || !weatherRes.ok)
-          throw new Error("APIエラー");
-
-        const marine = await marineRes.json();
-        const weather = await weatherRes.json();
-
-        renderTable(marine, weather);
-
-        updatedTimeEl.textContent = "最終更新：" + formatDate(new Date());
-        statusEl.textContent = "データ取得完了";
-
-      } catch (err) {
-        statusEl.textContent = "データ取得に失敗しました: " + err.message;
-        statusEl.classList.add("error");
-      }
-    }
-
-    /* 天気アイコン */
-    function weatherIcon(code) {
-      const map = {
-        0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
-        45: "🌫️", 48: "🌫️",
-        51: "🌦️", 61: "🌧️", 71: "🌨️",
-        95: "⛈️"
-      };
-      return map[code] || "❓";
-    }
-
-    /* ★ 風下方向の角度に変換 */
-    function toDownwind(deg) {
-      return (deg + 180) % 360;
-    }
-
-    /* ★ 角度 → 矢印 */
-    function arrowFromDeg(deg) {
-      if (deg >= 337.5 || deg < 22.5) return "↑";
-      if (deg < 67.5) return "↗";
-      if (deg < 112.5) return "→";
-      if (deg < 157.5) return "↘";
-      if (deg < 202.5) return "↓";
-      if (deg < 247.5) return "↙";
-      if (deg < 292.5) return "←";
-      return "↖";
-    }
-
-    /* ★ Marine の方向も矢印化 */
-    function arrowWithDeg(deg) {
-      const d = toDownwind(deg);
-      return arrowFromDeg(d) + " " + d + "°";
-    }
-
-    function renderTable(marine, weather) {
-      const h1 = marine.hourly;
-      const h2 = weather.hourly;
-
-      if (!h1?.time || !h2?.time) {
-        statusEl.textContent = "データ形式エラー";
-        statusEl.classList.add("error");
+    function centerToCurrentPosition() {
+      if (!navigator.geolocation) {
+        setStatus('この端末・ブラウザはGeolocation APIに対応していません。');
         return;
       }
 
-      const len = h1.time.length;
+      btn.disabled = true;
+      setStatus('現在地を取得しています…');
 
-      const columns = [
-        { key: "time", label: "時刻" },
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
 
-        // 天気データ
-        { key: "icon", label: "天気" },
-        { key: "temperature_2m", label: "気温 (°C)" },
-        { key: "windspeed_10m", label: "風速 (m/s)" },
-        { key: "winddirection_arrow", label: "風向" },
-
-        // Marine データ（矢印化）
-        { key: "wave_direction_arrow", label: "波向" },
-        { key: "wind_wave_direction_arrow", label: "風波向" },
-        { key: "swell_wave_direction_arrow", label: "うねり向" },
-
-        { key: "wave_height", label: "波高 (m)" },
-        { key: "wave_period", label: "波周期 (s)" },
-        { key: "wind_wave_height", label: "風波高 (m)" },
-        { key: "wind_wave_period", label: "風波周期 (s)" },
-        { key: "swell_wave_height", label: "うねり高 (m)" },
-        { key: "swell_wave_period", label: "うねり周期 (s)" },
-        { key: "sea_level_height_msl", label: "海面高度 (m)" },
-        { key: "sea_surface_temperature", label: "海面水温 (°C)" },
-        { key: "ocean_current_direction", label: "海流向 (°)" }
-      ];
-
-      let html = "<table><thead><tr>";
-      for (const col of columns) html += `<th>${col.label}</th>`;
-      html += "</tr></thead><tbody>";
-
-      for (let i = 0; i < len; i++) {
-        const timeStr = h1.time[i];
-        const hour = Number(timeStr.substring(11, 13));
-        const highlight = (hour >= 9 && hour <= 15) ? " class='highlight'" : "";
-
-        html += `<tr${highlight}>`;
-
-        for (const col of columns) {
-          let value = "";
-
-          if (col.key === "time") value = timeStr;
-
-          else if (col.key === "icon") value = weatherIcon(h2.weathercode[i]);
-
-          else if (col.key === "winddirection_arrow") {
-            const deg = h2.winddirection_10m[i];
-            const d = toDownwind(deg);
-            value = arrowFromDeg(d) + " " + d + "°";
+          // マーカーを更新
+          if (marker) {
+            marker.setLatLng([lat, lng]);
+          } else {
+            marker = L.marker([lat, lng]).addTo(map);
           }
 
-          else if (col.key === "wave_direction_arrow")
-            value = arrowWithDeg(h1.wave_direction[i]);
+          // 地図の中心とズームを調整
+          map.setView([lat, lng], 16);
 
-          else if (col.key === "wind_wave_direction_arrow")
-            value = arrowWithDeg(h1.wind_wave_direction[i]);
-
-          else if (col.key === "swell_wave_direction_arrow")
-            value = arrowWithDeg(h1.swell_wave_direction[i]);
-
-          else if (h2[col.key]) value = h2[col.key][i];
-          else if (h1[col.key]) value = h1[col.key][i];
-
-          /* ★ 強風色付け */
-          let cellClass = "";
-          if (col.key === "windspeed_10m") {
-            const ws = h2.windspeed_10m[i];
-            if (ws >= 15) cellClass = "wind-very-strong";
-            else if (ws >= 10) cellClass = "wind-strong";
+          setStatus(`現在地を取得しました（緯度: ${lat.toFixed(5)}, 経度: ${lng.toFixed(5)}）。`);
+          btn.disabled = false;
+        },
+        (err) => {
+          console.error(err);
+          switch (err.code) {
+            case err.PERMISSION_DENIED:
+              setStatus('位置情報の利用が拒否されました。ブラウザの設定で許可してください。');
+              break;
+            case err.POSITION_UNAVAILABLE:
+              setStatus('位置情報を取得できませんでした。電波状況やGPS設定を確認してください。');
+              break;
+            case err.TIMEOUT:
+              setStatus('位置情報の取得がタイムアウトしました。再度お試しください。');
+              break;
+            default:
+              setStatus('位置情報の取得中に不明なエラーが発生しました。');
           }
-
-          html += `<td class="${cellClass}">${value ?? ""}</td>`;
+          btn.disabled = false;
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
         }
-
-        html += "</tr>";
-      }
-
-      html += "</tbody></table>";
-      tableContainer.innerHTML = html;
+      );
     }
 
-    loadAll();
+    // ボタンで現在地取得
+    btn.addEventListener('click', centerToCurrentPosition);
+
+    // ページ表示時に一度だけ自動で現在地取得したい場合は、以下のコメントアウトを外す
+    // window.addEventListener('load', centerToCurrentPosition);
   </script>
 </body>
 
