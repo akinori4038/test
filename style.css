@@ -1,0 +1,44 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+#map {
+  flex: 1;
+}
+
+.controls {
+  padding: 8px 12px;
+  border-top: 1px solid #ddd;
+  background: #f8f8f8;
+}
+
+.btn {
+  padding: 10px 16px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: none;
+  background: #0078d4;
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+}
+
+.status {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #555;
+  word-break: break-all;
+}
