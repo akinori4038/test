@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
     trackCoords.push([lat, lng]);
     trackLine.setLatLngs(trackCoords);
 
-    map.setView([lat, lng], 17);
+    map.setView([lat, lng], map.getZoom());
   }
 
   function onError(err) {
