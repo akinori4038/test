@@ -5,25 +5,33 @@ document.addEventListener("DOMContentLoaded", () => {
 xmlns="http://www.w3.org/2000/svg">
 
   <defs>
+    <!-- 船体の3Dグラデーション -->
     <linearGradient id="kayakBody" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#4de0d8"/>
       <stop offset="50%" stop-color="#1fb5ad"/>
       <stop offset="100%" stop-color="#0e7f79"/>
     </linearGradient>
 
+    <!-- コーミングのグレーグラデーション -->
     <linearGradient id="cockpitGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#444"/>
-      <stop offset="100%" stop-color="#111"/>
+      <stop offset="0%" stop-color="#777"/>
+      <stop offset="100%" stop-color="#222"/>
     </linearGradient>
+
+    <!-- ドロップシャドウ（影） -->
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.45)"/>
+    </filter>
   </defs>
 
-  <!-- 5:1 の細長い艇体 -->
+  <!-- 影つきの細長い船体 -->
   <path d="M50 3
            C56 22, 60 40, 60 50
            C60 60, 56 78, 50 97
            C44 78, 40 60, 40 50
            C40 40, 44 22, 50 3 Z"
-        fill="url(#kayakBody)" stroke="#0a5f5a" stroke-width="3"/>
+        fill="url(#kayakBody)" stroke="#0a5f5a" stroke-width="3"
+        filter="url(#dropShadow)"/>
 
   <!-- ハイライト -->
   <path d="M50 6
@@ -31,7 +39,7 @@ xmlns="http://www.w3.org/2000/svg">
            C58 60, 55 78, 50 94"
         stroke="rgba(255,255,255,0.35)" stroke-width="3" fill="none"/>
 
-  <!-- ★ コーミング（2/3サイズに縮小） -->
+  <!-- コーミング（2/3サイズ・グレー） -->
   <ellipse cx="50" cy="50" rx="5" ry="15"
            fill="url(#cockpitGrad)" stroke="#000" stroke-width="3"/>
 
