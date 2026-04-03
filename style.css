@@ -12,14 +12,54 @@ body {
   height: 100%;
 }
 
-#map {
-  flex: 1;
+/* --- タブ --- */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #ccc;
+  background: #f0f0f0;
+  z-index: 9999;
 }
 
+.tab {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  font-size: 16px;
+  border: none;
+  background: #e6e6e6;
+  font-weight: 600;
+}
+
+.tab.active {
+  background: #ffffff;
+  border-bottom: 2px solid #0078d4;
+}
+
+/* --- 画面切り替え --- */
+.screen {
+  display: none;
+  height: calc(100% - 48px);
+  /* タブ分を引く */
+}
+
+.screen.active {
+  display: block;
+}
+
+/* --- 地図 --- */
+#map {
+  width: 100%;
+  height: calc(100% - 120px);
+  /* 下部コントロール分 */
+}
+
+/* --- 下部コントロール --- */
 .controls {
   padding: 8px 12px;
   border-top: 1px solid #ddd;
   background: #f8f8f8;
+  position: relative;
+  z-index: 9999;
 }
 
 .btn {
@@ -43,7 +83,9 @@ body {
   word-break: break-all;
 }
 
-.controls {
-  position: relative;
-  z-index: 9999;
+/* --- 天気・海況画面 --- */
+.forecastBox {
+  padding: 16px;
+  font-size: 15px;
+  line-height: 1.6;
 }
