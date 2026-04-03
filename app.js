@@ -118,7 +118,7 @@ xmlns="http://www.w3.org/2000/svg">
     fc.innerHTML = html;
   }
 
-  /* --- 位置更新 --- */
+  /* --- 位置更新（追従中の横スクロール戻り対策あり） --- */
   function onLocationUpdate(pos) {
     const lat = pos.coords.latitude;
     const lng = pos.coords.longitude;
@@ -138,7 +138,11 @@ xmlns="http://www.w3.org/2000/svg">
     trackCoords.push([lat, lng]);
     trackLine.setLatLngs(trackCoords);
 
-    map.panTo([lat, lng], { animate: false });
+    /* ★★★ 重要：地図タブのときだけ panTo() を実行する ★★★ */
+    const isMapActive = document.getElementById("mapScreen").classList.contains("active");
+    if (isMapActive) {
+      map.panTo([lat, lng], { animate: false });
+    }
 
     fetchWeatherMarine(lat, lng);
   }
