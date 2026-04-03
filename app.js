@@ -27,6 +27,9 @@ let marker = null;
 let trackCoords = [];
 let trackLine = L.polyline([], { color: 'red', weight: 3 }).addTo(map);
 
+// --- watchId（追従状態管理） ---
+let watchId = null;
+
 // --- 位置更新処理 ---
 function onLocationUpdate(pos) {
   const lat = pos.coords.latitude;
@@ -55,11 +58,31 @@ function onLocationUpdate(pos) {
 
 function onError(err) {
   console.error(err);
+  document.getElementById("status").textContent = "位置情報エラー: " + err.message;
 }
 
-// --- 現在地追従開始 ---
-navigator.geolocation.watchPosition(onLocationUpdate, onError, {
-  enableHighAccuracy: true,
-  maximumAge: 0,
-  timeout: 10000
+// --- トグルボタン処理 ---
+const locBtn = document.getElementById("locBtn");
+const status = document.getElementById("status");
+
+locBtn.addEventListener("click", () => {
+  // 追従中 → 停止
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+
+    locBtn.textContent = "追従開始";
+    status.textContent = "追従停止中";
+    return;
+  }
+
+  // 停止中 → 開始
+  watchId = navigator.geolocation.watchPosition(onLocationUpdate, onError, {
+    enableHighAccuracy: true,
+    maximumAge: 0,
+    timeout: 10000
+  });
+
+  locBtn.textContent = "追従停止";
+  status.textContent = "追従中…";
 });
