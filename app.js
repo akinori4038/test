@@ -17,7 +17,7 @@ xmlns="http://www.w3.org/2000/svg">
     </linearGradient>
   </defs>
 
-  <!-- 長さ：幅 = 5：1 の細長い艇体 -->
+  <!-- 5:1 の細長い艇体 -->
   <path d="M50 3
            C56 22, 60 40, 60 50
            C60 60, 56 78, 50 97
@@ -31,8 +31,8 @@ xmlns="http://www.w3.org/2000/svg">
            C58 60, 55 78, 50 94"
         stroke="rgba(255,255,255,0.35)" stroke-width="3" fill="none"/>
 
-  <!-- 細長いコーミング -->
-  <ellipse cx="50" cy="50" rx="8" ry="22"
+  <!-- ★ コーミング（2/3サイズに縮小） -->
+  <ellipse cx="50" cy="50" rx="5" ry="15"
            fill="url(#cockpitGrad)" stroke="#000" stroke-width="3"/>
 
   <!-- デッキライン -->
