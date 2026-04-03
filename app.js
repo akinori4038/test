@@ -5,36 +5,34 @@ document.addEventListener("DOMContentLoaded", () => {
 xmlns="http://www.w3.org/2000/svg">
 
   <defs>
-    <!-- 船体の3Dグラデーション -->
     <linearGradient id="kayakBody" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#4de0d8"/>
       <stop offset="50%" stop-color="#1fb5ad"/>
       <stop offset="100%" stop-color="#0e7f79"/>
     </linearGradient>
 
-    <!-- コーミングの立体グラデーション -->
     <linearGradient id="cockpitGrad" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#444"/>
       <stop offset="100%" stop-color="#111"/>
     </linearGradient>
   </defs>
 
-  <!-- 細長いカヤック本体 -->
-  <path d="M50 1
-           C60 22, 68 40, 68 50
-           C75 60, 63 78, 50 99
-           C37 78, 25 60, 25 50
-           C25 40, 37 22, 50 3 Z"
+  <!-- 長さ：幅 = 5：1 の細長い艇体 -->
+  <path d="M50 3
+           C56 22, 60 40, 60 50
+           C60 60, 56 78, 50 97
+           C44 78, 40 60, 40 50
+           C40 40, 44 22, 50 3 Z"
         fill="url(#kayakBody)" stroke="#0a5f5a" stroke-width="3"/>
 
-  <!-- ハイライト（光の反射） -->
+  <!-- ハイライト -->
   <path d="M50 6
-           C58 22, 66 40, 66 50
-           C66 60, 58 78, 50 94"
+           C55 22, 58 40, 58 50
+           C58 60, 55 78, 50 94"
         stroke="rgba(255,255,255,0.35)" stroke-width="3" fill="none"/>
 
   <!-- 細長いコーミング -->
-  <ellipse cx="50" cy="50" rx="10" ry="22"
+  <ellipse cx="50" cy="50" rx="8" ry="22"
            fill="url(#cockpitGrad)" stroke="#000" stroke-width="3"/>
 
   <!-- デッキライン -->
