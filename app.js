@@ -124,19 +124,26 @@ xmlns="http://www.w3.org/2000/svg">
     `;
 
     for (let i = 0; i < 72; i++) {
-      html += `
-        <tr>
-          <td>${times[i]}</td>
-          <td>${temp[i]}</td>
-          <td>${wind[i]}</td>
-          <td>${windDir[i]}</td>
-          <td>${wave[i]}</td>
-          <td>${waveDir[i]}</td>
-          <td>${sst[i]}</td>
-        </tr>
-      `;
-    }
 
+      // ★ 日時フォーマット変換（MM/DD hh時）
+      const t = new Date(times[i]);
+      const mm = String(t.getMonth() + 1).padStart(2, "0");
+      const dd = String(t.getDate()).padStart(2, "0");
+      const hh = String(t.getHours()).padStart(2, "0");
+      const timeFormatted = `${mm}/${dd} ${hh}時`;
+
+      html += `
+    <tr>
+      <td>${timeFormatted}</td>
+      <td>${temp[i]}</td>
+      <td>${wind[i]}</td>
+      <td>${windDir[i]}</td>
+      <td>${wave[i]}</td>
+      <td>${waveDir[i]}</td>
+      <td>${sst[i]}</td>
+    </tr>
+  `;
+    }
     html += `
           </tbody>
         </table>
