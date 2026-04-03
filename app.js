@@ -198,19 +198,30 @@ xmlns="http://www.w3.org/2000/svg">
       forecastScreen.classList.add("active");
       mapScreen.classList.remove("active");
 
-      // ★★★ タブを開いた瞬間に現在地で天気・海況を更新 ★★★
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          fetchWeatherMarine(lat, lng);
-        },
-        (err) => {
-          document.getElementById("forecast").textContent =
-            "位置情報エラー: " + err.message;
-        },
-        { enableHighAccuracy: true }
-      );
+      // ★ タブを開いたタイミングで現在位置を1回だけ取得して天気・海況を更新
+      if (navigator.geolocation) {
+        document.getElementById("forecast").textContent = "天気・海況データを取得中…";
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            fetchWeatherMarine(lat, lng);
+          },
+          (err) => {
+            document.getElementById("forecast").textContent =
+              "位置情報エラー: " + err.message;
+          },
+          {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 10000
+          }
+        );
+      } else {
+        document.getElementById("forecast").textContent =
+          "この端末では位置情報が利用できません。";
+      }
     }
   }
 
