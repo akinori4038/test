@@ -190,12 +190,27 @@ xmlns="http://www.w3.org/2000/svg">
       forecastScreen.classList.remove("active");
 
       setTimeout(() => map.invalidateSize(), 50);
+
     } else {
       tabForecast.classList.add("active");
       tabMap.classList.remove("active");
 
       forecastScreen.classList.add("active");
       mapScreen.classList.remove("active");
+
+      // ★★★ タブを開いた瞬間に現在地で天気・海況を更新 ★★★
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          fetchWeatherMarine(lat, lng);
+        },
+        (err) => {
+          document.getElementById("forecast").textContent =
+            "位置情報エラー: " + err.message;
+        },
+        { enableHighAccuracy: true }
+      );
     }
   }
 
