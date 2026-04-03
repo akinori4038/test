@@ -5,26 +5,22 @@ document.addEventListener("DOMContentLoaded", () => {
 xmlns="http://www.w3.org/2000/svg">
 
   <defs>
-    <!-- 船体の3Dグラデーション -->
     <linearGradient id="kayakBody" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#4de0d8"/>
       <stop offset="50%" stop-color="#1fb5ad"/>
       <stop offset="100%" stop-color="#0e7f79"/>
     </linearGradient>
 
-    <!-- コーミングのグレーグラデーション -->
     <linearGradient id="cockpitGrad" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#777"/>
       <stop offset="100%" stop-color="#222"/>
     </linearGradient>
 
-    <!-- ドロップシャドウ（影） -->
     <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.45)"/>
     </filter>
   </defs>
 
-  <!-- 影つきの細長い船体 -->
   <path d="M50 3
            C56 22, 60 40, 60 50
            C60 60, 56 78, 50 97
@@ -33,17 +29,14 @@ xmlns="http://www.w3.org/2000/svg">
         fill="url(#kayakBody)" stroke="#0a5f5a" stroke-width="3"
         filter="url(#dropShadow)"/>
 
-  <!-- ハイライト -->
   <path d="M50 6
            C55 22, 58 40, 58 50
            C58 60, 55 78, 50 94"
         stroke="rgba(255,255,255,0.35)" stroke-width="3" fill="none"/>
 
-  <!-- コーミング（2/3サイズ・グレー） -->
   <ellipse cx="50" cy="50" rx="5" ry="15"
            fill="url(#cockpitGrad)" stroke="#000" stroke-width="3"/>
 
-  <!-- デッキライン -->
   <line x1="50" y1="3" x2="50" y2="22"
         stroke="#ffffff" stroke-width="2" opacity="0.6"/>
   <line x1="50" y1="78" x2="50" y2="97"
@@ -51,14 +44,13 @@ xmlns="http://www.w3.org/2000/svg">
 
 </svg>`;
 
-  // --- アイコン化（Base64を使わない安全方式） ---
   const kayakIcon = L.icon({
     iconUrl: "data:image/svg+xml;utf8," + encodeURIComponent(kayakSvg),
-    iconSize: [76, 76],      // ★ 1.5倍に拡大
-    iconAnchor: [38, 38],    // ★ 中心位置も調整
+    iconSize: [76, 76],
+    iconAnchor: [38, 38],
   });
 
-  // --- 地図初期化 ---
+  // --- 地図 ---
   const map = L.map('map').setView([35.681236, 139.767125], 5);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -74,6 +66,60 @@ xmlns="http://www.w3.org/2000/svg">
 
   // --- watchId ---
   let watchId = null;
+
+  // --- 天気＋海況データ取得 ---
+  async function fetchWeatherMarine(lat, lng) {
+    const weatherUrl =
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}` +
+      `&hourly=temperature_2m,wind_speed_10m,wind_direction_10m,weathercode,cloudcover,surface_pressure` +
+      `&timezone=auto`;
+
+    const marineUrl =
+      `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}` +
+      `&hourly=wave_height,wave_direction,wave_period,wind_wave_height,wind_wave_direction,wind_wave_period,` +
+      `swell_wave_height,swell_wave_direction,swell_wave_period,sea_surface_temperature` +
+      `&timezone=auto`;
+
+    try {
+      const [wRes, mRes] = await Promise.all([
+        fetch(weatherUrl),
+        fetch(marineUrl)
+      ]);
+
+      const weather = await wRes.json();
+      const marine = await mRes.json();
+
+      updateForecastDisplay(weather, marine);
+
+    } catch (e) {
+      console.error("天気/海況取得エラー:", e);
+      document.getElementById("forecast").textContent =
+        "天気/海況データ取得エラー";
+    }
+  }
+
+  // --- 表示更新 ---
+  function updateForecastDisplay(weather, marine) {
+    const fc = document.getElementById("forecast");
+
+    const t = weather.hourly.time[0];
+    const temp = weather.hourly.temperature_2m[0];
+    const wind = weather.hourly.wind_speed_10m[0];
+    const windDir = weather.hourly.wind_direction_10m[0];
+
+    const wave = marine.hourly.wave_height[0];
+    const waveDir = marine.hourly.wave_direction[0];
+    const sst = marine.hourly.sea_surface_temperature[0];
+
+    fc.innerHTML = `
+      <b>【現在位置の1時間予報】</b><br>
+      時刻：${t}<br>
+      気温：${temp} ℃<br>
+      風速：${wind} m/s（${windDir}°）<br>
+      波高：${wave} m（${waveDir}°）<br>
+      海面水温：${sst} ℃
+    `;
+  }
 
   // --- 位置更新 ---
   function onLocationUpdate(pos) {
@@ -95,13 +141,17 @@ xmlns="http://www.w3.org/2000/svg">
     trackCoords.push([lat, lng]);
     trackLine.setLatLngs(trackCoords);
 
-    // ★ ズームを変えずに位置だけ追従（ズーム保持）
+    // ズーム保持で追従
     map.panTo([lat, lng], { animate: false });
+
+    // ★ 天気＋海況を更新
+    fetchWeatherMarine(lat, lng);
   }
 
   function onError(err) {
     console.error(err);
-    document.getElementById("status").textContent = "位置情報エラー: " + err.message;
+    document.getElementById("status").textContent =
+      "位置情報エラー: " + err.message;
   }
 
   // --- トグルボタン ---
@@ -109,7 +159,6 @@ xmlns="http://www.w3.org/2000/svg">
   const status = document.getElementById("status");
 
   locBtn.addEventListener("click", () => {
-    // 追従中 → 停止
     if (watchId !== null) {
       navigator.geolocation.clearWatch(watchId);
       watchId = null;
@@ -119,7 +168,6 @@ xmlns="http://www.w3.org/2000/svg">
       return;
     }
 
-    // 停止中 → 開始
     watchId = navigator.geolocation.watchPosition(onLocationUpdate, onError, {
       enableHighAccuracy: true,
       maximumAge: 0,
