@@ -138,13 +138,14 @@ xmlns="http://www.w3.org/2000/svg">
     trackCoords.push([lat, lng]);
     trackLine.setLatLngs(trackCoords);
 
-    /* ★★★ 重要：地図タブのときだけ panTo() を実行する ★★★ */
+    // ★★★ 地図タブのときだけ panTo() と天気更新を行う ★★★
     const isMapActive = document.getElementById("mapScreen").classList.contains("active");
     if (isMapActive) {
       map.panTo([lat, lng], { animate: false });
-    }
 
-    fetchWeatherMarine(lat, lng);
+      // ★ 地図タブのときだけ天気・海況を更新
+      fetchWeatherMarine(lat, lng);
+    }
   }
 
   function onError(err) {
