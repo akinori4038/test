@@ -20,9 +20,9 @@ xmlns="http://www.w3.org/2000/svg">
   </defs>
 
   <!-- 細長いカヤック本体 -->
-  <path d="M50 3
-           C63 22, 75 40, 75 50
-           C75 60, 63 78, 50 97
+  <path d="M50 1
+           C60 22, 68 40, 68 50
+           C75 60, 63 78, 50 99
            C37 78, 25 60, 25 50
            C25 40, 37 22, 50 3 Z"
         fill="url(#kayakBody)" stroke="#0a5f5a" stroke-width="3"/>
