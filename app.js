@@ -2,48 +2,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- SVGシーカヤックアイコン（リアル3D・ターコイズ） ---
   const kayakSvg = `<svg width="60" height="60" viewBox="0 0 100 100"
-  xmlns="http://www.w3.org/2000/svg">
+xmlns="http://www.w3.org/2000/svg">
 
-    <defs>
-      <!-- 船体の3Dグラデーション -->
-      <linearGradient id="kayakBody" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#4de0d8"/>
-        <stop offset="50%" stop-color="#1fb5ad"/>
-        <stop offset="100%" stop-color="#0e7f79"/>
-      </linearGradient>
+  <defs>
+    <!-- 船体の3Dグラデーション -->
+    <linearGradient id="kayakBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4de0d8"/>
+      <stop offset="50%" stop-color="#1fb5ad"/>
+      <stop offset="100%" stop-color="#0e7f79"/>
+    </linearGradient>
 
-      <!-- コーミングの立体グラデーション -->
-      <linearGradient id="cockpitGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#444"/>
-        <stop offset="100%" stop-color="#111"/>
-      </linearGradient>
-    </defs>
+    <!-- コーミングの立体グラデーション -->
+    <linearGradient id="cockpitGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#444"/>
+      <stop offset="100%" stop-color="#111"/>
+    </linearGradient>
+  </defs>
 
-    <!-- カヤック本体 -->
-    <path d="M50 5 
-             C62 22, 72 40, 72 50 
-             C72 60, 62 78, 50 95
-             C38 78, 28 60, 28 50
-             C28 40, 38 22, 50 5 Z"
-          fill="url(#kayakBody)" stroke="#0a5f5a" stroke-width="3"/>
+  <!-- 細長いカヤック本体 -->
+  <path d="M50 3
+           C63 22, 75 40, 75 50
+           C75 60, 63 78, 50 97
+           C37 78, 25 60, 25 50
+           C25 40, 37 22, 50 3 Z"
+        fill="url(#kayakBody)" stroke="#0a5f5a" stroke-width="3"/>
 
-    <!-- ハイライト（光の反射） -->
-    <path d="M50 8 
-             C58 22, 64 40, 64 50 
-             C64 60, 58 78, 50 92"
-          stroke="rgba(255,255,255,0.35)" stroke-width="3" fill="none"/>
+  <!-- ハイライト（光の反射） -->
+  <path d="M50 6
+           C58 22, 66 40, 66 50
+           C66 60, 58 78, 50 94"
+        stroke="rgba(255,255,255,0.35)" stroke-width="3" fill="none"/>
 
-    <!-- コーミング -->
-    <ellipse cx="50" cy="50" rx="12" ry="20"
-             fill="url(#cockpitGrad)" stroke="#000" stroke-width="3"/>
+  <!-- 細長いコーミング -->
+  <ellipse cx="50" cy="50" rx="10" ry="22"
+           fill="url(#cockpitGrad)" stroke="#000" stroke-width="3"/>
 
-    <!-- デッキライン -->
-    <line x1="50" y1="5" x2="50" y2="25"
-          stroke="#ffffff" stroke-width="2" opacity="0.6"/>
-    <line x1="50" y1="75" x2="50" y2="95"
-          stroke="#ffffff" stroke-width="2" opacity="0.6"/>
+  <!-- デッキライン -->
+  <line x1="50" y1="3" x2="50" y2="22"
+        stroke="#ffffff" stroke-width="2" opacity="0.6"/>
+  <line x1="50" y1="78" x2="50" y2="97"
+        stroke="#ffffff" stroke-width="2" opacity="0.6"/>
 
-  </svg>`;
+</svg>`;
 
   // --- アイコン化（Base64を使わない安全方式） ---
   const kayakIcon = L.icon({
