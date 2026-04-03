@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  // --- SVGシーカヤックアイコン（リアル3D・ターコイズ） ---
+  // --- SVGシーカヤックアイコン ---
   const kayakSvg = `<svg width="60" height="60" viewBox="0 0 100 100"
 xmlns="http://www.w3.org/2000/svg">
 
@@ -141,10 +141,8 @@ xmlns="http://www.w3.org/2000/svg">
     trackCoords.push([lat, lng]);
     trackLine.setLatLngs(trackCoords);
 
-    // ズーム保持で追従
     map.panTo([lat, lng], { animate: false });
 
-    // ★ 天気＋海況を更新
     fetchWeatherMarine(lat, lng);
   }
 
@@ -154,7 +152,7 @@ xmlns="http://www.w3.org/2000/svg">
       "位置情報エラー: " + err.message;
   }
 
-  // --- トグルボタン ---
+  // --- 追従トグル ---
   const locBtn = document.getElementById("locBtn");
   const status = document.getElementById("status");
 
@@ -177,5 +175,33 @@ xmlns="http://www.w3.org/2000/svg">
     locBtn.textContent = "追従停止";
     status.textContent = "追従中…";
   });
+
+  // --- タブ切り替え ---
+  const tabMap = document.getElementById("tabMap");
+  const tabForecast = document.getElementById("tabForecast");
+
+  const mapScreen = document.getElementById("mapScreen");
+  const forecastScreen = document.getElementById("forecastScreen");
+
+  function activateTab(target) {
+    if (target === "map") {
+      tabMap.classList.add("active");
+      tabForecast.classList.remove("active");
+
+      mapScreen.classList.add("active");
+      forecastScreen.classList.remove("active");
+
+      map.invalidateSize();
+    } else {
+      tabForecast.classList.add("active");
+      tabMap.classList.remove("active");
+
+      forecastScreen.classList.add("active");
+      mapScreen.classList.remove("active");
+    }
+  }
+
+  tabMap.addEventListener("click", () => activateTab("map"));
+  tabForecast.addEventListener("click", () => activateTab("forecast"));
 
 });

@@ -3,12 +3,11 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>海上GPSビューア（現在地＋船アイコン＋天気/海況）</title>
+  <title>海上GPSビューア（地図＋天気/海況）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
 
   <!-- 自分のCSS -->
   <link rel="stylesheet" href="style.css" />
@@ -16,30 +15,41 @@
 
 <body>
   <div id="app">
-    <!-- 地図 -->
-    <div id="map"></div>
 
-    <!-- 下部コントロール（追従ボタン＋ステータス＋天気/海況） -->
-    <div class="controls">
-      <button id="locBtn" class="btn" type="button">追従開始</button>
-
-      <div id="status" class="status">
-        位置情報の許可をすると、現在地を中心に船アイコンと軌跡が表示されます。
-      </div>
-
-      <!-- ★ 天気＋海況の1時間予報（app.js が更新） -->
-      <div id="forecast" class="status"></div>
+    <!-- ★ タブ -->
+    <div class="tabs">
+      <button id="tabMap" class="tab active">地図</button>
+      <button id="tabForecast" class="tab">天気・海況</button>
     </div>
+
+    <!-- ★ 地図画面 -->
+    <div id="mapScreen" class="screen active">
+      <div id="map"></div>
+
+      <div class="controls">
+        <button id="locBtn" class="btn" type="button">追従開始</button>
+        <div id="status" class="status">
+          位置情報の許可をすると、現在地を中心に船アイコンと軌跡が表示されます。
+        </div>
+      </div>
+    </div>
+
+    <!-- ★ 天気・海況画面 -->
+    <div id="forecastScreen" class="screen">
+      <div id="forecast" class="forecastBox">
+        天気・海況データを取得中…
+      </div>
+    </div>
+
   </div>
 
   <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
-  <!-- 回転マーカー用プラグイン -->
+  <!-- 回転マーカー -->
   <script src="https://rawcdn.githack.com/bbecquet/Leaflet.RotatedMarker/master/leaflet.rotatedMarker.js"></script>
 
-  <!-- 自分のJS（完全統合版 app.js） -->
+  <!-- 自分のJS -->
   <script src="app.js"></script>
 </body>
 
