@@ -54,8 +54,8 @@ xmlns="http://www.w3.org/2000/svg">
   // --- アイコン化（Base64を使わない安全方式） ---
   const kayakIcon = L.icon({
     iconUrl: "data:image/svg+xml;utf8," + encodeURIComponent(kayakSvg),
-    iconSize: [65, 65],      // ★ 1.3倍に拡大
-    iconAnchor: [33, 33],    // ★ 中心位置も調整
+    iconSize: [76, 76],      // ★ 1.5倍に拡大
+    iconAnchor: [38, 38],    // ★ 中心位置も調整
   });
 
   // --- 地図初期化 ---
