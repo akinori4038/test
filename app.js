@@ -93,7 +93,7 @@ xmlns="http://www.w3.org/2000/svg">
 
   /* --- 3日分 × 1時間予報の表を生成 --- */
   function updateForecastDisplay(weather, marine) {
-    updateLastUpdateTime();   // ★ 最終更新を表示
+    updateLastUpdateTime();
 
     const fc = document.getElementById("forecast");
 
@@ -106,51 +106,59 @@ xmlns="http://www.w3.org/2000/svg">
     const waveDir = marine.hourly.wave_direction;
     const sst = marine.hourly.sea_surface_temperature;
 
+    // ★ 時刻をフォーマット（MM/DD hh時）
+    const formattedTimes = times.slice(0, 72).map(t => {
+      const d = new Date(t);
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      const hh = String(d.getHours()).padStart(2, "0");
+      return `${mm}/${dd} ${hh}時`;
+    });
+
     let html = `
-      <div class="forecastTableWrapper">
-        <table class="forecastTable">
-          <thead>
-            <tr>
-              <th>日時</th>
-              <th>気温(℃)</th>
-              <th>風速(m/s)</th>
-              <th>風向(°)</th>
-              <th>波高(m)</th>
-              <th>波向(°)</th>
-              <th>海面水温(℃)</th>
-            </tr>
-          </thead>
-          <tbody>
-    `;
-
-    for (let i = 0; i < 72; i++) {
-
-      // ★ 日時フォーマット変換（MM/DD hh時）
-      const t = new Date(times[i]);
-      const mm = String(t.getMonth() + 1).padStart(2, "0");
-      const dd = String(t.getDate()).padStart(2, "0");
-      const hh = String(t.getHours()).padStart(2, "0");
-      const timeFormatted = `${mm}/${dd} ${hh}時`;
-
-      html += `
-    <tr>
-      <td>${timeFormatted}</td>
-      <td>${temp[i]}</td>
-      <td>${wind[i]}</td>
-      <td>${windDir[i]}</td>
-      <td>${wave[i]}</td>
-      <td>${waveDir[i]}</td>
-      <td>${sst[i]}</td>
-    </tr>
+    <div class="forecastTableWrapper">
+      <table class="forecastTable">
+        <thead>
+          <tr>
+            <th>項目＼時間</th>
   `;
-    }
-    html += `
-          </tbody>
-        </table>
-      </div>
-    `;
 
-    // ★ 最終更新の下に表を再描画
+    // ★ 時刻を横方向に並べる
+    for (let i = 0; i < 72; i++) {
+      html += `<th>${formattedTimes[i]}</th>`;
+    }
+
+    html += `
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+    // ★ 各項目を縦方向に並べる（横に72時間分）
+    const rows = [
+      { label: "気温(℃)", data: temp },
+      { label: "風速(m/s)", data: wind },
+      { label: "風向(°)", data: windDir },
+      { label: "波高(m)", data: wave },
+      { label: "波向(°)", data: waveDir },
+      { label: "海面水温(℃)", data: sst }
+    ];
+
+    rows.forEach(row => {
+      html += `<tr><td>${row.label}</td>`;
+      for (let i = 0; i < 72; i++) {
+        html += `<td>${row.data[i]}</td>`;
+      }
+      html += `</tr>`;
+    });
+
+    html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+    // ★ 最終更新の下にテーブルを再描画
     const lastUpdate = document.getElementById("lastUpdateTime");
     fc.innerHTML = "";
     fc.appendChild(lastUpdate);
