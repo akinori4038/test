@@ -3,77 +3,37 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>アイコンデバッグ</title>
+  <title>海上GPSビューア（現在地＋船アイコン）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
-  <style>
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-    }
-
-    #map {
-      width: 100%;
-      height: 100%;
-    }
-  </style>
+  <!-- 自分のCSS -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-  <div id="map"></div>
+  <div id="app">
+    <div id="map"></div>
+    <div class="controls">
+      <button id="locBtn" class="btn" type="button">追従開始</button>
+      <div id="status" class="status">
+        位置情報の許可をすると、現在地を中心に船アイコンと軌跡が表示されます。
+      </div>
+    </div>
+  </div>
 
   <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-  <script>
-    // --- シーカヤックSVG ---
-    const kayakSvg = `<svg width="60" height="60" viewBox="0 0 100 100"
-    xmlns="http://www.w3.org/2000/svg">
+  <!-- 回転マーカー用プラグイン -->
+  <script src="https://rawcdn.githack.com/bbecquet/Leaflet.RotatedMarker/master/leaflet.rotatedMarker.js"></script>
 
-      <path d="M50 5 
-               C60 20, 70 40, 70 50 
-               C70 60, 60 80, 50 95
-               C40 80, 30 60, 30 50
-               C30 40, 40 20, 50 5 Z"
-            fill="#ffcc33" stroke="#b8860b" stroke-width="3"/>
-
-      <ellipse cx="50" cy="50" rx="12" ry="20"
-               fill="#333" stroke="#111" stroke-width="3"/>
-
-      <line x1="50" y1="5" x2="50" y2="25"
-            stroke="#ffffff" stroke-width="2" opacity="0.7"/>
-      <line x1="50" y1="75" x2="50" y2="95"
-            stroke="#ffffff" stroke-width="2" opacity="0.7"/>
-
-    </svg>`;
-
-    // --- アイコン化（Base64を使わない安全方式） ---
-    const kayakIcon = L.icon({
-      iconUrl: "data:image/svg+xml;utf8," + encodeURIComponent(kayakSvg),
-      iconSize: [50, 50],
-      iconAnchor: [25, 25],
-    });
-
-    // --- 地図初期化（東京駅） ---
-    const map = L.map('map').setView([35.681236, 139.767125], 16);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    // --- デバッグ：固定位置にアイコンを置く ---
-    L.marker([35.681236, 139.767125], {
-      icon: kayakIcon
-    }).addTo(map);
-
-    console.log("デバッグ：カヤックアイコンを配置しました");
-  </script>
+  <!-- 自分のJS -->
+  <script src="app.js"></script>
 </body>
 
 </html>
