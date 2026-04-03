@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* --- カヤックアイコン（省略なし完全版） --- */
+  /* --- カヤックアイコン --- */
   const kayakSvg = `<svg width="60" height="60" viewBox="0 0 100 100"
 xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -65,26 +65,57 @@ xmlns="http://www.w3.org/2000/svg">
     }
   }
 
+  /* --- 3日分 × 1時間予報の表を生成 --- */
   function updateForecastDisplay(weather, marine) {
     const fc = document.getElementById("forecast");
 
-    const t = weather.hourly.time[0];
-    const temp = weather.hourly.temperature_2m[0];
-    const wind = weather.hourly.wind_speed_10m[0];
-    const windDir = weather.hourly.wind_direction_10m[0];
+    const times = weather.hourly.time;
+    const temp = weather.hourly.temperature_2m;
+    const wind = weather.hourly.wind_speed_10m;
+    const windDir = weather.hourly.wind_direction_10m;
 
-    const wave = marine.hourly.wave_height[0];
-    const waveDir = marine.hourly.wave_direction[0];
-    const sst = marine.hourly.sea_surface_temperature[0];
+    const wave = marine.hourly.wave_height;
+    const waveDir = marine.hourly.wave_direction;
+    const sst = marine.hourly.sea_surface_temperature;
 
-    fc.innerHTML = `
-      <b>【現在位置の1時間予報】</b><br>
-      時刻：${t}<br>
-      気温：${temp} ℃<br>
-      風速：${wind} m/s（${windDir}°）<br>
-      波高：${wave} m（${waveDir}°）<br>
-      海面水温：${sst} ℃
+    let html = `
+      <div class="forecastTableWrapper">
+        <table class="forecastTable">
+          <thead>
+            <tr>
+              <th>日時</th>
+              <th>気温(℃)</th>
+              <th>風速(m/s)</th>
+              <th>風向(°)</th>
+              <th>波高(m)</th>
+              <th>波向(°)</th>
+              <th>海面水温(℃)</th>
+            </tr>
+          </thead>
+          <tbody>
     `;
+
+    for (let i = 0; i < 72; i++) {
+      html += `
+        <tr>
+          <td>${times[i]}</td>
+          <td>${temp[i]}</td>
+          <td>${wind[i]}</td>
+          <td>${windDir[i]}</td>
+          <td>${wave[i]}</td>
+          <td>${waveDir[i]}</td>
+          <td>${sst[i]}</td>
+        </tr>
+      `;
+    }
+
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    fc.innerHTML = html;
   }
 
   /* --- 位置更新 --- */

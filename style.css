@@ -38,7 +38,6 @@ body {
 .screen {
   display: none;
   flex: 1;
-  /* ← ★ これが重要（縦方向の高さを自動確保） */
   overflow-y: auto;
 }
 
@@ -50,7 +49,6 @@ body {
 /* --- 地図 --- */
 #map {
   flex: 1;
-  /* ← ★ 高さ計算をやめて自動伸縮に変更 */
   width: 100%;
 }
 
@@ -79,7 +77,35 @@ body {
 
 /* --- 天気・海況画面 --- */
 .forecastBox {
-  padding: 16px;
-  font-size: 15px;
-  line-height: 1.6;
+  padding: 10px;
+}
+
+/* --- 予報テーブル --- */
+.forecastTableWrapper {
+  overflow-x: auto;
+  padding: 10px;
+}
+
+.forecastTable {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 700px;
+  font-size: 14px;
+}
+
+.forecastTable th {
+  background: #0078d4;
+  color: #fff;
+  padding: 6px;
+  position: sticky;
+  top: 0;
+}
+
+.forecastTable td {
+  padding: 6px;
+  border-bottom: 1px solid #ddd;
+}
+
+.forecastTable tr:nth-child(even) {
+  background: #f5f5f5;
 }
