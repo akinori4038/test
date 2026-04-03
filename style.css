@@ -109,3 +109,11 @@ body {
 .forecastTable tr:nth-child(even) {
   background: #f5f5f5;
 }
+
+.forecastTableWrapper {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px;
+  flex-shrink: 0;
+}
