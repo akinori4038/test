@@ -52,7 +52,8 @@ document.addEventListener("DOMContentLoaded", () => {
     trackCoords.push([lat, lng]);
     trackLine.setLatLngs(trackCoords);
 
-    map.setView([lat, lng], map.getZoom());
+    // ★ ズームを変えずに位置だけ追従
+    map.panTo([lat, lng], { animate: false });
   }
 
   function onError(err) {
