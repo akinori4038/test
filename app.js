@@ -139,7 +139,7 @@ xmlns="http://www.w3.org/2000/svg">
     }
   }
 
-  /* --- 3日分 × 1時間予報の表（縦横逆転＋SVG風向＋現在時刻ハイライト） --- */
+  /* --- 3日分 × 1時間予報の表（現在時刻ハイライト） --- */
   function updateForecastDisplay(weather, marine) {
     updateLastUpdateTime();
 
@@ -181,11 +181,9 @@ xmlns="http://www.w3.org/2000/svg">
             <th>項目＼時間</th>
     `;
 
+    /* --- ヘッダーはハイライトしない --- */
     for (let i = 0; i < 72; i++) {
-      const highlightStyle = (i === highlightIndex)
-        ? `style="background:#fff7b2; font-weight:bold; border-left:2px solid #e0b800; border-right:2px solid #e0b800;"`
-        : "";
-      html += `<th ${highlightStyle}>${formattedTimes[i]}</th>`;
+      html += `<th>${formattedTimes[i]}</th>`;
     }
 
     html += `
