@@ -49,11 +49,15 @@ xmlns="http://www.w3.org/2000/svg">
   /* --- 最終更新日時 --- */
   function updateLastUpdateTime() {
     const now = new Date();
+
+    const yyyy = now.getFullYear();
     const mm = String(now.getMonth() + 1).padStart(2, "0");
     const dd = String(now.getDate()).padStart(2, "0");
     const hh = String(now.getHours()).padStart(2, "0");
+    const min = String(now.getMinutes()).padStart(2, "0");
 
-    const formatted = `${mm}/${dd} ${hh}時`;
+    // ★ フォーマットを YYYY/MM/DD hh:mm に変更
+    const formatted = `${yyyy}/${mm}/${dd} ${hh}:${min}`;
 
     const fc = document.getElementById("forecast");
 
