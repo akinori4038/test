@@ -6,52 +6,36 @@
   <title>海上GPSビューア（地図＋天気/海況）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+
+  <!-- 自分のCSS -->
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
   <div id="app">
 
-    <!-- タブ -->
+    <!-- ★ タブ -->
     <div class="tabs">
       <button id="tabMap" class="tab active">地図</button>
       <button id="tabForecast" class="tab">天気・海況</button>
     </div>
 
-    <!-- 地図画面（全画面表示） -->
-    <div id="mapScreen" class="view active">
-
-      <div id="map">
-
-        <!-- 中央固定チェック（左下） -->
-        <label id="trackCheckbox" class="mapCheckbox">
-          <input type="checkbox" id="trackChk" checked>
-          中央固定
-        </label>
-
-        <!-- WP距離・方向（右上） -->
-        <div id="navInfo" class="mapNavInfo"></div>
-
-      </div>
+    <!-- ★ 地図画面 -->
+    <div id="mapScreen" class="screen active">
+      <div id="map"></div>
 
       <div class="controls">
-
-        <!-- 軌跡 ON/OFF -->
-        <button id="pathBtn" class="btn" type="button">
-          軌跡OFF
-        </button>
-
-        <!-- WP削除 -->
-        <button id="wpClearBtn" class="btn" type="button" style="background:#888; margin-left:8px;">
-          WP削除
-        </button>
-
+        <button id="locBtn" class="btn" type="button">追従開始</button>
+        <div id="status" class="status">
+          位置情報の許可をすると、現在地を中心に船アイコンと軌跡が表示されます。
+        </div>
       </div>
     </div>
 
-    <!-- 天気・海況画面（全画面表示） -->
-    <div id="forecastScreen" class="view">
+    <!-- ★ 天気・海況画面 -->
+    <div id="forecastScreen" class="screen">
       <div id="forecast" class="forecastBox">
         天気・海況データを取得中…
       </div>
@@ -59,9 +43,14 @@
 
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/bbecquet/Leaflet.RotatedMarker/leaflet.rotatedMarker.js"></script>
-  <script type="module" src="app.js"></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+  <!-- 回転マーカー -->
+  <script src="https://rawcdn.githack.com/bbecquet/Leaflet.RotatedMarker/master/leaflet.rotatedMarker.js"></script>
+
+  <!-- 自分のJS -->
+  <script src="app.js"></script>
 </body>
 
 </html>

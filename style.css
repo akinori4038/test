@@ -1,6 +1,3 @@
-/* ============================================================
-   基本レイアウト
-============================================================ */
 html,
 body {
   margin: 0;
@@ -15,9 +12,7 @@ body {
   height: 100%;
 }
 
-/* ============================================================
-   タブ
-============================================================ */
+/* --- タブ --- */
 .tabs {
   display: flex;
   background: #f0f0f0;
@@ -39,42 +34,29 @@ body {
   border-bottom: 2px solid #0078d4;
 }
 
-/* ============================================================
-   シングルビュー方式（画面完全切り替え）
-============================================================ */
-.view {
+/* --- 画面切り替え --- */
+.screen {
   display: none;
-  height: 100%;
-  width: 100%;
+  flex: 1;
+  overflow-y: auto;
 }
 
-.view.active {
-  display: block;
-}
-
-/* ============================================================
-   地図画面（mapScreen）
-============================================================ */
-#mapScreen {
+.screen.active {
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
-#mapScreen #map {
+/* --- 地図 --- */
+#map {
   flex: 1;
   width: 100%;
-  height: auto;
-  min-height: 0;
-  /* ← flex 子要素の縮みを許可 */
 }
 
-/* 下部コントロール */
+/* --- 下部コントロール --- */
 .controls {
   padding: 8px 12px;
   border-top: 1px solid #ddd;
   background: #f8f8f8;
-  flex-shrink: 0;
 }
 
 .btn {
@@ -93,44 +75,7 @@ body {
   color: #555;
 }
 
-/* 地図上のチェックボックス（左下） */
-.mapCheckbox {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  background: rgba(255, 255, 255, 0.85);
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 16px;
-  z-index: 9999;
-  user-select: none;
-  pointer-events: auto;
-}
-
-.mapCheckbox input {
-  transform: scale(1.4);
-  margin-right: 6px;
-}
-
-/* WP距離・方向（右上） */
-.mapNavInfo {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 16px;
-  z-index: 9999;
-  min-width: 120px;
-  text-align: right;
-  white-space: pre-line;
-}
-
-/* ============================================================
-   天気・海況画面（あなたの添付CSSを完全復元）
-============================================================ */
+/* --- 天気・海況画面 --- */
 .forecastBox {
   padding: 10px;
 }
@@ -179,6 +124,7 @@ body {
   position: sticky;
   left: 0;
   background: #ffffff;
+  /* 背景色は必ず指定 */
   z-index: 5;
   font-weight: bold;
 }
@@ -192,6 +138,7 @@ body {
 .forecastTableWrapper {
   overflow-x: auto;
   padding: 0;
+  /* ★ 左端ズレの原因を解消 */
   margin: 0;
 }
 
@@ -200,7 +147,25 @@ body {
 .forecastTable th:first-child {
   position: sticky;
   left: 0;
+  background: #ffffff;
+  /* ★ 背景必須（透け防止） */
+  z-index: 5;
+  font-weight: bold;
+  border-right: 1px solid #ccc;
+}
+
+/* 左上のセル（項目＼時間）を最前面に */
+.forecastTable th:first-child {
+  z-index: 6;
+}
+
+/* 左側の項目列を固定（画面左端に揃える） */
+.forecastTable td:first-child,
+.forecastTable th:first-child {
+  position: sticky;
+  left: 0;
   width: 6ch;
+  /* ★ 全角3文字＋改行後の単位が収まる幅 */
   min-width: 6ch;
   max-width: 6ch;
   background: #ffffff;
@@ -220,6 +185,7 @@ body {
 .forecastTable td:first-child,
 .forecastTable th:first-child {
   background: #f0f4ff !important;
+  /* ← 好きな色に変更可能 */
 }
 
 /* ヘッダー（日時）の文字色を黒に */
@@ -231,10 +197,12 @@ body {
 .forecastTable thead th {
   background: #f0f4ff !important;
   color: #000 !important;
+  /* ← 文字色は黒で固定 */
 }
 
 /* 天気アイコンだけ大きくする（項目セルは除外） */
 .forecastTable tbody tr:nth-child(1) td:not(:first-child) {
   font-size: 28px;
+  /* ← 好きな大きさに調整 */
   line-height: 1.2;
 }

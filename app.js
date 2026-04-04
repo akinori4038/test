@@ -1,157 +1,377 @@
-// ===============================
-// 画面切り替え（シングルビュー方式）
-// ===============================
-const tabMap = document.getElementById("tabMap");
-const tabForecast = document.getElementById("tabForecast");
+document.addEventListener("DOMContentLoaded", () => {
 
-const mapScreen = document.getElementById("mapScreen");
-const forecastScreen = document.getElementById("forecastScreen");
+  /* --- カヤックアイコン --- */
+  const kayakSvg = `<svg width="60" height="60" viewBox="0 0 100 100"
+xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="kayakBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4de0d8"/>
+      <stop offset="50%" stop-color="#1fb5ad"/>
+      <stop offset="100%" stop-color="#0e7f79"/>
+    </linearGradient>
+    <linearGradient id="cockpitGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#777"/>
+      <stop offset="100%" stop-color="#222"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.45)"/>
+    </filter>
+  </defs>
+  <path d="M50 3 C56 22, 60 40, 60 50 C60 60, 56 78, 50 97 C44 78, 40 60, 40 50 C40 40, 44 22, 50 3 Z"
+        fill="url(#kayakBody)" stroke="#0a5f5a" stroke-width="3" filter="url(#dropShadow)"/>
+  <path d="M50 6 C55 22, 58 40, 58 50 C58 60, 55 78, 50 94"
+        stroke="rgba(255,255,255,0.35)" stroke-width="3" fill="none"/>
+  <ellipse cx="50" cy="50" rx="5" ry="15"
+           fill="url(#cockpitGrad)" stroke="#000" stroke-width="3"/>
+  <line x1="50" y1="3" x2="50" y2="22" stroke="#ffffff" stroke-width="2" opacity="0.6"/>
+  <line x1="50" y1="78" x2="50" y2="97" stroke="#ffffff" stroke-width="2" opacity="0.6"/>
+</svg>`;
 
-// タブ切り替え
-tabMap.addEventListener("click", () => {
-  tabMap.classList.add("active");
-  tabForecast.classList.remove("active");
+  const kayakIcon = L.icon({
+    iconUrl: "data:image/svg+xml;utf8," + encodeURIComponent(kayakSvg),
+    iconSize: [76, 76],
+    iconAnchor: [38, 38],
+  });
 
-  mapScreen.classList.add("active");
-  forecastScreen.classList.remove("active");
+  /* --- 地図 --- */
+  const map = L.map('map').setView([35.681236, 139.767125], 5);
 
-  // Leaflet の地図が非表示 → 再表示された時に必要
-  setTimeout(() => {
-    if (window._leafletMap) {
-      window._leafletMap.invalidateSize();
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  let marker = null;
+  let trackCoords = [];
+  let trackLine = L.polyline([], { color: 'red', weight: 3 }).addTo(map);
+  let watchId = null;
+
+  /* --- 最終更新日時 --- */
+  function updateLastUpdateTime() {
+    const now = new Date();
+
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    const hh = String(now.getHours()).padStart(2, "0");
+    const min = String(now.getMinutes()).padStart(2, "0");
+
+    const formatted = `${yyyy}/${mm}/${dd} ${hh}:${min}`;
+
+    const fc = document.getElementById("forecast");
+
+    const old = document.getElementById("lastUpdateTime");
+    if (old) old.remove();
+
+    const div = document.createElement("div");
+    div.id = "lastUpdateTime";
+    div.style.padding = "8px";
+    div.style.fontSize = "14px";
+    div.style.fontWeight = "600";
+    div.textContent = "最終更新：" + formatted;
+
+    fc.prepend(div);
+  }
+
+  /* --- 天気アイコン変換 --- */
+  function weatherIcon(code) {
+    if (code === 0) return "☀️";
+    if (code === 1 || code === 2) return "🌤️";
+    if (code === 3) return "☁️";
+    if (code === 45 || code === 48) return "🌫️";
+    if (code >= 51 && code <= 67) return "🌦️";
+    if (code >= 71 && code <= 77) return "🌨️";
+    if (code >= 80 && code <= 82) return "🌧️";
+    if (code >= 95) return "⛈️";
+    return "❓";
+  }
+
+  /* --- 降水量の色分け --- */
+  function precipColor(p) {
+    p = Number(p);
+
+    if (p === 0) return "";
+    if (p > 0 && p < 1) return "background:#d0e7ff;";
+    if (p >= 1 && p < 5) return "background:#7fbfff;";
+    if (p >= 5 && p < 20) return "background:#005bff; color:white;";
+    if (p >= 20) return "background:#8000ff; color:white;";
+
+    return "";
+  }
+
+  /* --- 風速に応じた色（風向アイコンと風速文字で共通化） --- */
+  function windColor(speed) {
+    speed = Number(speed);
+
+    if (speed < 1) return "#999999";      // 無風〜微風
+    if (speed >= 1 && speed < 4) return "#4da3ff";
+    if (speed >= 4 && speed < 7) return "#3cb371";
+    if (speed >= 7 && speed < 10) return "#ffa500";
+    if (speed >= 10 && speed < 20) return "#ff4500";
+    if (speed >= 20) return "#8000ff";
+
+    return "#4da3ff";
+  }
+
+  /* --- 鋭角 SVG 風向矢印 --- */
+  function windArrowSvg(deg, speed) {
+    if (deg === null || deg === undefined) return "？";
+
+    const down = (deg + 180) % 360;
+    const color = windColor(speed);
+
+    const arrowSvg = `
+      <svg width="22" height="22" viewBox="0 0 100 100">
+        <polygon points="50,5 70,95 30,95" fill="${color}"/>
+      </svg>
+    `;
+
+    return `
+      <div style="
+        width:22px;
+        height:22px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        transform: rotate(${down}deg);
+      ">
+        ${arrowSvg}
+      </div>
+    `;
+  }
+
+  /* --- 項目名と単位を2行に分ける --- */
+  function splitLabel(label) {
+    const match = label.match(/^(.+?)\((.+?)\)$/);
+    if (!match) return label;
+    const name = match[1];
+    const unit = match[2];
+    return `${name}<br><span style="font-size:12px; color:#555;">(${unit})</span>`;
+  }
+
+  /* --- 天気＋海況 API --- */
+  async function fetchWeatherMarine(lat, lng) {
+    const weatherUrl =
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}` +
+      `&hourly=temperature_2m,wind_speed_10m,wind_direction_10m,weathercode,cloudcover,surface_pressure,precipitation&timezone=auto`;
+
+    const marineUrl =
+      `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}` +
+      `&hourly=wave_height,wave_direction,wave_period,wind_wave_height,wind_wave_direction,wind_wave_period,` +
+      `swell_wave_height,swell_wave_direction,swell_wave_period,sea_surface_temperature&timezone=auto`;
+
+    try {
+      const [wRes, mRes] = await Promise.all([fetch(weatherUrl), fetch(marineUrl)]);
+      updateForecastDisplay(await wRes.json(), await mRes.json());
+    } catch (e) {
+      console.warn("天気/海況データ取得エラー");
+      updateLastUpdateTime();
     }
-  }, 50);
-});
-
-tabForecast.addEventListener("click", () => {
-  tabForecast.classList.add("active");
-  tabMap.classList.remove("active");
-
-  forecastScreen.classList.add("active");
-  mapScreen.classList.remove("active");
-});
-
-
-// ===============================
-// Leaflet 地図の初期化
-// ===============================
-const map = L.map("map", {
-  zoomControl: false,
-  attributionControl: false
-}).setView([35.45, 139.65], 12);
-
-window._leafletMap = map; // invalidateSize() 用に保持
-
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 19
-}).addTo(map);
-
-
-// ===============================
-// 中央固定チェック
-// ===============================
-const trackChk = document.getElementById("trackChk");
-let isTracking = true;
-
-trackChk.addEventListener("change", () => {
-  isTracking = trackChk.checked;
-});
-
-
-// ===============================
-// WP距離・方向の表示
-// ===============================
-const navInfo = document.getElementById("navInfo");
-let waypoint = null;
-
-map.on("click", (e) => {
-  waypoint = e.latlng;
-  updateNavInfo();
-});
-
-function updateNavInfo() {
-  if (!waypoint) {
-    navInfo.textContent = "";
-    return;
   }
 
-  const center = map.getCenter();
-  const dist = center.distanceTo(waypoint); // m
-  const bearing = calcBearing(center, waypoint);
+  /* --- 3日分 × 1時間予報の表 --- */
+  function updateForecastDisplay(weather, marine) {
+    updateLastUpdateTime();
 
-  navInfo.textContent =
-    `距離: ${(dist / 1000).toFixed(2)} km\n方位: ${bearing.toFixed(0)}°`;
-}
+    const fc = document.getElementById("forecast");
 
-function calcBearing(a, b) {
-  const lat1 = a.lat * Math.PI / 180;
-  const lat2 = b.lat * Math.PI / 180;
-  const dLon = (b.lng - a.lng) * Math.PI / 180;
+    const times = weather.hourly.time;
+    const temp = weather.hourly.temperature_2m;
+    const wind = weather.hourly.wind_speed_10m;
+    const windDir = weather.hourly.wind_direction_10m;
+    const weatherCode = weather.hourly.weathercode;
+    const precip = weather.hourly.precipitation;
 
-  const y = Math.sin(dLon) * Math.cos(lat2);
-  const x =
-    Math.cos(lat1) * Math.sin(lat2) -
-    Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+    const wave = marine.hourly.wave_height;
+    const swell = marine.hourly.swell_wave_height;
+    const sst = marine.hourly.sea_surface_temperature;
 
-  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
-}
+    const formattedTimes = times.slice(0, 72).map(t => {
+      const d = new Date(t);
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      const hh = String(d.getHours()).padStart(2, "0");
+      return `${mm}/${dd} ${hh}時`;
+    });
 
+    const now = new Date();
+    const nowMM = String(now.getMonth() + 1).padStart(2, "0");
+    const nowDD = String(now.getDate()).padStart(2, "0");
+    const nowHH = String(now.getHours()).padStart(2, "0");
+    const nowLabel = `${nowMM}/${nowDD} ${nowHH}時`;
 
-// ===============================
-// 軌跡 ON/OFF
-// ===============================
-let pathEnabled = false;
-let pathLine = L.polyline([], { color: "red", weight: 3 }).addTo(map);
+    const highlightIndex = formattedTimes.indexOf(nowLabel);
 
-document.getElementById("pathBtn").addEventListener("click", () => {
-  pathEnabled = !pathEnabled;
-  document.getElementById("pathBtn").textContent = pathEnabled ? "軌跡ON" : "軌跡OFF";
+    let html = `
+    <div class="forecastTableWrapper">
+      <table class="forecastTable">
+        <thead>
+          <tr>
+            <th>日時</th>
+    `;
 
-  if (!pathEnabled) {
-    pathLine.setLatLngs([]);
+    for (let i = 0; i < 72; i++) {
+      html += `<th>${formattedTimes[i]}</th>`;
+    }
+
+    html += `
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    /* --- rows を rawLabel + label の2つ持ちにする --- */
+    const rows = [
+      { rawLabel: "天気", label: splitLabel("天気"), data: weatherCode.map(c => weatherIcon(c)) },
+      { rawLabel: "降水量(mm)", label: splitLabel("降水量(mm)"), data: precip },
+      { rawLabel: "気温(℃)", label: splitLabel("気温(℃)"), data: temp },
+      { rawLabel: "風速(m/s)", label: splitLabel("風速(m/s)"), data: wind },
+      { rawLabel: "風向", label: splitLabel("風向"), data: windDir.map((d, i) => windArrowSvg(d, wind[i])) },
+      { rawLabel: "波高(m)", label: splitLabel("波高(m)"), data: wave },
+      { rawLabel: "うねり(m)", label: splitLabel("うねり(m)"), data: swell },
+      { rawLabel: "海水温(℃)", label: splitLabel("海水温(℃)"), data: sst }
+    ];
+
+    rows.forEach(row => {
+      html += `<tr><td>${row.label}</td>`;
+      for (let i = 0; i < 72; i++) {
+
+        let extraStyle = "";
+
+        /* --- 降水量の色分け（rawLabel で判定） --- */
+        if (row.rawLabel === "降水量(mm)") {
+          extraStyle = precipColor(row.data[i]);
+        }
+
+        /* --- 風速セルの文字色を風向アイコンと統一 --- */
+        let textColor = "";
+        if (row.rawLabel === "風速(m/s)") {
+          textColor = `color:${windColor(row.data[i])};`;
+        }
+
+        const highlightStyle = (i === highlightIndex)
+          ? `border-left:2px solid #e0b800; border-right:2px solid #e0b800;`
+          : "";
+
+        html += `<td style="${extraStyle} ${highlightStyle} ${textColor}">${row.data[i]}</td>`;
+      }
+      html += `</tr>`;
+    });
+
+    html += `
+        </tbody>
+      </table>
+    </div>
+    `;
+
+    const lastUpdate = document.getElementById("lastUpdateTime");
+    fc.innerHTML = "";
+    fc.appendChild(lastUpdate);
+    fc.insertAdjacentHTML("beforeend", html);
   }
+
+  /* --- 位置更新（追従中のみ天気更新） --- */
+  function onLocationUpdate(pos) {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    const heading = pos.coords.heading;
+
+    if (!marker) {
+      marker = L.marker([lat, lng], {
+        icon: kayakIcon,
+        rotationAngle: heading || 0,
+        rotationOrigin: 'center center'
+      }).addTo(map);
+    } else {
+      marker.setLatLng([lat, lng]);
+      marker.setRotationAngle(heading || 0);
+    }
+
+    trackCoords.push([lat, lng]);
+    trackLine.setLatLngs(trackCoords);
+
+    const isMapActive = document.getElementById("mapScreen").classList.contains("active");
+    if (isMapActive) {
+      map.panTo([lat, lng], { animate: false });
+      fetchWeatherMarine(lat, lng);
+    }
+  }
+
+  function onError(err) {
+    document.getElementById("status").textContent = "位置情報エラー: " + err.message;
+  }
+
+  /* --- 追従トグル --- */
+  const locBtn = document.getElementById("locBtn");
+  const status = document.getElementById("status");
+
+  locBtn.addEventListener("click", () => {
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+      locBtn.textContent = "追従開始";
+      status.textContent = "追従停止中";
+      return;
+    }
+
+    watchId = navigator.geolocation.watchPosition(onLocationUpdate, onError, {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 10000
+    });
+
+    locBtn.textContent = "追従停止";
+    status.textContent = "追従中…";
+  });
+
+  /* --- タブ切り替え --- */
+  const tabMap = document.getElementById("tabMap");
+  const tabForecast = document.getElementById("tabForecast");
+
+  const mapScreen = document.getElementById("mapScreen");
+  const forecastScreen = document.getElementById("forecastScreen");
+
+  function activateTab(target) {
+    if (target === "map") {
+      tabMap.classList.add("active");
+      tabForecast.classList.remove("active");
+
+      mapScreen.classList.add("active");
+      forecastScreen.classList.remove("active");
+
+      setTimeout(() => map.invalidateSize(), 50);
+
+    } else {
+      tabForecast.classList.add("active");
+      tabMap.classList.remove("active");
+
+      forecastScreen.classList.add("active");
+      mapScreen.classList.remove("active");
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            fetchWeatherMarine(lat, lng);
+          },
+          (err) => {
+            console.warn("位置情報エラー:", err.message);
+            updateLastUpdateTime();
+          },
+          {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 10000
+          }
+        );
+      } else {
+        console.warn("この端末では位置情報が利用できません。");
+        updateLastUpdateTime();
+      }
+    }
+  }
+
+  tabMap.addEventListener("click", () => activateTab("map"));
+  tabForecast.addEventListener("click", () => activateTab("forecast"));
 });
-
-
-// ===============================
-// 現在位置の追跡
-// ===============================
-map.locate({ watch: true, enableHighAccuracy: true });
-
-map.on("locationfound", (e) => {
-  if (pathEnabled) {
-    pathLine.addLatLng(e.latlng);
-  }
-
-  if (isTracking) {
-    map.setView(e.latlng);
-  }
-
-  updateNavInfo();
-});
-
-
-// ===============================
-// 天気・海況データの取得
-// ===============================
-import { renderForecast } from "./forecastTable.js";
-
-async function loadForecast() {
-  const lat = 35.45;
-  const lon = 139.65;
-
-  const urlWeather =
-    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
-    `&hourly=temperature_2m,wind_speed_10m,wind_direction_10m,weathercode,precipitation`;
-
-  const urlMarine =
-    `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}` +
-    `&hourly=wave_height,swell_wave_height,sea_surface_temperature`;
-
-  const w = await fetch(urlWeather).then(r => r.json());
-  const m = await fetch(urlMarine).then(r => r.json());
-
-  renderForecast(w, m);
-}
-
-loadForecast();
