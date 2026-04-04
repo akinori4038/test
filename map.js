@@ -131,7 +131,8 @@ export function initMap() {
     if (waypointLine) map.removeLayer(waypointLine);
     waypointLine = L.polyline([], { color: "blue", weight: 2 }).addTo(map);
 
-    navInfo.textContent = "ウェイポイント設定済み";
+    /* ★ メッセージ表示は不要 → navInfo は空のまま */
+    navInfo.textContent = "";
 
     /* WP設定 → 青 */
     wpClearBtn.style.background = "#0078d4";
