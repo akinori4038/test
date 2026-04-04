@@ -117,3 +117,19 @@ body {
   padding: 10px;
   flex-shrink: 0;
 }
+
+/* --- 左側の項目列を固定 --- */
+.forecastTable td:first-child,
+.forecastTable th:first-child {
+  position: sticky;
+  left: 0;
+  background: #ffffff;
+  /* 背景色は必ず指定 */
+  z-index: 5;
+  font-weight: bold;
+}
+
+/* ヘッダー左上セルはさらに上に重ねる */
+.forecastTable th:first-child {
+  z-index: 6;
+}
