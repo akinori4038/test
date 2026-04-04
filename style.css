@@ -1,26 +1,87 @@
+/* ============================================================
+   基本レイアウト
+============================================================ */
+html,
 body {
   margin: 0;
-  font-family: sans-serif;
+  padding: 0;
+  height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* ============================
-   地図画面（画面にピッタリ収める）
-============================ */
-#mapScreen {
-  position: relative;
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-/* 地図の高さを 100vh ではなく、タブ＋controls を引いた値にする */
+/* ============================================================
+   タブ
+============================================================ */
+.tabs {
+  display: flex;
+  background: #f0f0f0;
+  border-bottom: 1px solid #ccc;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  font-size: 16px;
+  border: none;
+  background: #e6e6e6;
+  font-weight: 600;
+}
+
+.tab.active {
+  background: #ffffff;
+  border-bottom: 2px solid #0078d4;
+}
+
+/* ============================================================
+   画面切り替え
+============================================================ */
+.screen {
+  display: none;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.screen.active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   地図画面専用 CSS（天気タブと完全分離）
+============================================================ */
+
+/* 地図領域 */
 #mapScreen #map {
+  flex: 1;
   width: 100%;
   height: calc(100vh - 120px);
-  /* ← ここが重要！ */
+  /* ← 地図の無駄スペースを出さない */
   position: relative;
 }
 
-/* ============================
-   地図上の UI（重ねる）
-============================ */
+/* 下部コントロール（地図専用） */
+#mapScreen .controls {
+  padding: 8px 12px;
+  border-top: 1px solid #ddd;
+  background: #f8f8f8;
+}
+
+#mapScreen .btn {
+  padding: 10px 16px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: none;
+  background: #0078d4;
+  color: #fff;
+  font-weight: 600;
+}
 
 /* 中央固定チェック（左下） */
 .mapCheckbox {
@@ -57,94 +118,80 @@ body {
   white-space: pre-line;
 }
 
-/* ============================
-   下部コントロール（地図の外に出ない）
-============================ */
-.controls {
-  padding: 10px;
-  background: #f0f0f0;
-}
-
-.btn {
-  padding: 10px 14px;
-  font-size: 16px;
-  border: none;
-  border-radius: 6px;
-  background: #0078d4;
-  color: white;
-}
-
-/* ============================
-   タブ
-============================ */
-.tabs {
-  display: flex;
-  background: #eee;
-}
-
-.tab {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  background: #ddd;
-  font-size: 16px;
-}
-
-.tab.active {
-  background: #bbb;
-}
-
-/* ============================
-   画面切替
-============================ */
-.screen {
-  display: none;
-}
-
-.screen.active {
-  display: block;
-}
-
-/* ============================
-   天気画面（自然に伸びる）
-============================ */
-#forecastScreen {
-  padding: 10px;
-}
+/* ============================================================
+   天気・海況画面専用 CSS（完全復元）
+============================================================ */
 
 .forecastBox {
-  font-size: 16px;
+  padding: 10px;
 }
 
-/* ============================
-   天気・海況テーブルの左列（全角3文字＋単位2行目）
-============================ */
-.forecastBox table {
+/* --- 予報テーブル --- */
+.forecastTableWrapper {
+  overflow-x: auto;
+  padding: 10px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.forecastTable {
   border-collapse: collapse;
   width: 100%;
-}
-
-.forecastBox th,
-.forecastBox td {
-  padding: 4px 6px;
+  min-width: 700px;
   font-size: 14px;
-  border-bottom: 1px solid #ccc;
 }
 
-/* ★ 左列：全角3文字幅（=6ch）＋単位は2行目 */
-.forecastBox .labelCell {
+/* 見出し（日時） */
+.forecastTable th {
+  background: #0078d4;
+  color: #fff;
+  padding: 6px;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+/* データセル */
+.forecastTable td {
+  padding: 6px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* 偶数行の背景 */
+.forecastTable tr:nth-child(even) {
+  background: #f5f5f5;
+}
+
+/* --- 左側の項目列を固定 --- */
+.forecastTable td:first-child,
+.forecastTable th:first-child {
+  position: sticky;
+  left: 0;
   width: 6ch;
+  /* ← 全角3文字幅 */
   min-width: 6ch;
   max-width: 6ch;
-  white-space: nowrap;
+  background: #f0f4ff !important;
+  /* ← 薄青背景（復元） */
+  z-index: 5;
+  font-weight: bold;
+  border-right: 1px solid #ccc;
   text-align: left;
-  vertical-align: top;
+  padding-left: 4px;
 }
 
-/* 単位は2行目に表示 */
-.forecastBox .labelCell .unit {
-  display: block;
-  font-size: 12px;
-  margin-top: 2px;
-  white-space: nowrap;
+/* 左上セル（日時）を最前面に */
+.forecastTable th:first-child {
+  z-index: 6;
+}
+
+/* 見出し行（日時）も薄青に統一 */
+.forecastTable thead th {
+  background: #f0f4ff !important;
+  color: #000 !important;
+}
+
+/* 天気アイコンだけ大きくする */
+.forecastTable tbody tr:nth-child(1) td:not(:first-child) {
+  font-size: 28px;
+  line-height: 1.2;
 }
