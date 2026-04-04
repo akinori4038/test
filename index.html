@@ -28,6 +28,10 @@
 
       <div class="controls">
         <button id="locBtn" class="btn" type="button">追従開始</button>
+
+        <!-- ★ GPX保存ボタン（map.js が参照） -->
+        <button id="saveGpxBtn" class="btn" type="button">GPX保存</button>
+
         <div id="status" class="status">
           位置情報の許可をすると、現在地を中心に船アイコンと軌跡が表示されます。
         </div>
@@ -49,8 +53,8 @@
   <!-- 回転マーカー -->
   <script src="https://rawcdn.githack.com/bbecquet/Leaflet.RotatedMarker/master/leaflet.rotatedMarker.js"></script>
 
-  <!-- 自分のJS -->
-  <script src="app.js"></script>
+  <!-- ★ ES Modules として読み込む（最重要） -->
+  <script type="module" src="app.js"></script>
 </body>
 
 </html>
