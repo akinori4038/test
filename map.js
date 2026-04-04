@@ -90,6 +90,10 @@ export function initMap() {
   const wpClearBtn = document.getElementById("wpClearBtn");
   const navInfo = document.getElementById("navInfo");
 
+  /* --- WP削除ボタン初期状態（未設定 → グレー） --- */
+  wpClearBtn.style.background = "#888";
+  wpClearBtn.disabled = true;
+
   /* --- ★ ウェイポイント削除処理（initMap 内） --- */
   function clearWaypoint() {
     waypoint = null;
@@ -105,6 +109,10 @@ export function initMap() {
     }
 
     navInfo.textContent = "";
+
+    /* WP未設定 → グレー */
+    wpClearBtn.style.background = "#888";
+    wpClearBtn.disabled = true;
   }
 
   /* --- WP削除ボタン --- */
@@ -124,6 +132,10 @@ export function initMap() {
     waypointLine = L.polyline([], { color: "blue", weight: 2 }).addTo(map);
 
     navInfo.textContent = "ウェイポイント設定済み";
+
+    /* WP設定 → 青 */
+    wpClearBtn.style.background = "#0078d4";
+    wpClearBtn.disabled = false;
   });
 
   /* --- 位置更新 --- */
@@ -201,7 +213,7 @@ export function initMap() {
     { enableHighAccuracy: true }
   );
 
-  /* --- ★ トラッキング開始（初期状態 ON） --- */
+  /* --- トラッキング開始（初期状態 ON） --- */
   watchId = navigator.geolocation.watchPosition(onLocationUpdate, onError, {
     enableHighAccuracy: true,
     maximumAge: 0,
