@@ -69,12 +69,27 @@ function calcBearing(lat1, lon1, lat2, lon2) {
   return (toDeg(Math.atan2(y, x)) + 360) % 360;
 }
 
+/* --- ★ ウェイポイント削除処理 --- */
+function clearWaypoint() {
+  waypoint = null;
+
+  if (waypointMarker) {
+    map.removeLayer(waypointMarker);
+    waypointMarker = null;
+  }
+
+  if (waypointLine) {
+    map.removeLayer(waypointLine);
+    waypointLine = null;
+  }
+
+  navInfo.textContent = "";
+}
+
 /* --- map.js のメイン --- */
 export function initMap() {
 
-  /* --- 地図初期化（ズーム17） --- */
   const map = L.map("map").setView([35.681236, 139.767125], 17);
-
   window._leaflet_map_instance = map;
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -87,8 +102,12 @@ export function initMap() {
   let watchId = null;
 
   const locBtn = document.getElementById("locBtn");
+  const wpClearBtn = document.getElementById("wpClearBtn");
   const status = document.getElementById("status");
-  const navInfo = document.getElementById("navInfo");  // ← index.html に追加する
+  const navInfo = document.getElementById("navInfo");
+
+  /* --- WP削除ボタン --- */
+  wpClearBtn.addEventListener("click", clearWaypoint);
 
   /* --- ウェイポイント設定（地図タップ） --- */
   map.on("click", (e) => {
@@ -126,7 +145,7 @@ export function initMap() {
     trackCoords.push([lat, lng]);
     trackLine.setLatLngs(trackCoords);
 
-    /* --- ウェイポイントがある場合、距離・方位・直線を更新 --- */
+    /* --- ウェイポイントがある場合 --- */
     if (waypoint) {
       const [wlat, wlng] = waypoint;
 
@@ -140,6 +159,12 @@ export function initMap() {
       navInfo.textContent = `距離: ${distStr}　方位: ${bearing.toFixed(1)}°`;
 
       waypointLine.setLatLngs([[lat, lng], [wlat, wlng]]);
+
+      /* --- ★ 5m 以下なら自動削除 --- */
+      if (dist <= 5) {
+        clearWaypoint();
+        navInfo.textContent = "ウェイポイント到達 → 自動削除";
+      }
     }
 
     /* --- 天気更新 --- */

@@ -19,28 +19,24 @@ document.addEventListener("DOMContentLoaded", () => {
   function activateTab(target) {
 
     if (target === "map") {
-      /* --- 地図タブをアクティブに --- */
       tabMap.classList.add("active");
       tabForecast.classList.remove("active");
 
       mapScreen.classList.add("active");
       forecastScreen.classList.remove("active");
 
-      /* --- Leaflet のサイズ調整（分割前仕様） --- */
       setTimeout(() => {
         const map = window._leaflet_map_instance;
         if (map) map.invalidateSize();
       }, 50);
 
     } else {
-      /* --- 天気タブをアクティブに --- */
       tabForecast.classList.add("active");
       tabMap.classList.remove("active");
 
       forecastScreen.classList.add("active");
       mapScreen.classList.remove("active");
 
-      /* --- 天気タブを開いた時だけ天気更新（分割前仕様） --- */
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           async (pos) => {
@@ -67,7 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  /* --- タブイベント（分割前仕様） --- */
   tabMap.addEventListener("click", () => activateTab("map"));
   tabForecast.addEventListener("click", () => activateTab("forecast"));
 });
