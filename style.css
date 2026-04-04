@@ -164,12 +164,12 @@ body {
 .forecastTable th:first-child {
   position: sticky;
   left: 0;
-  width: 3ch;
-  /* ★ 横に3文字分 */
-  min-width: 3ch;
-  max-width: 3ch;
+  width: 6ch;
+  /* 全角3文字 ≒ 半角6文字ぶん */
+  min-width: 6ch;
+  max-width: 6ch;
   white-space: nowrap;
-  /* ★ 折り返し禁止 → 縦に3行にならない */
+  /* 折り返し禁止 */
   background: #ffffff;
   z-index: 5;
   font-weight: bold;
