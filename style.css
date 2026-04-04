@@ -199,3 +199,10 @@ body {
   color: #000 !important;
   /* ← 文字色は黒で固定 */
 }
+
+/* 天気アイコンを一回り大きく */
+.forecastTable tr:nth-child(1) td {
+  font-size: 28px;
+  /* ← 好きな大きさに調整可能（デフォルトは16px前後） */
+  line-height: 1.2;
+}
