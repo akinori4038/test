@@ -72,7 +72,7 @@ export function renderForecast(weather, marine) {
     { rawLabel: "海水温(℃)", label: splitLabel("海水温(℃)"), data: sst }
   ];
 
-  /* --- HTML生成（元の構造を完全再現） --- */
+  /* --- HTML生成（分割前仕様を完全再現） --- */
   let html = `
     <div class="forecastTableWrapper">
       <table class="forecastTable">

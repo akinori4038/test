@@ -83,7 +83,11 @@ body {
 /* --- 予報テーブル --- */
 .forecastTableWrapper {
   overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
   padding: 10px;
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .forecastTable {
@@ -99,6 +103,7 @@ body {
   padding: 6px;
   position: sticky;
   top: 0;
+  z-index: 4;
 }
 
 .forecastTable td {
@@ -110,65 +115,15 @@ body {
   background: #f5f5f5;
 }
 
-.forecastTableWrapper {
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  padding: 10px;
-  flex-shrink: 0;
-}
-
-/* --- 左側の項目列を固定 --- */
-.forecastTable td:first-child,
-.forecastTable th:first-child {
-  position: sticky;
-  left: 0;
-  background: #ffffff;
-  /* 背景色は必ず指定 */
-  z-index: 5;
-  font-weight: bold;
-}
-
-/* ヘッダー左上セルはさらに上に重ねる */
-.forecastTable th:first-child {
-  z-index: 6;
-}
-
-/* テーブル全体の横スクロール領域 */
-.forecastTableWrapper {
-  overflow-x: auto;
-  padding: 0;
-  /* ★ 左端ズレの原因を解消 */
-  margin: 0;
-}
-
-/* 左側の項目列を固定（画面左端に揃える） */
-.forecastTable td:first-child,
-.forecastTable th:first-child {
-  position: sticky;
-  left: 0;
-  background: #ffffff;
-  /* ★ 背景必須（透け防止） */
-  z-index: 5;
-  font-weight: bold;
-  border-right: 1px solid #ccc;
-}
-
-/* 左上のセル（項目＼時間）を最前面に */
-.forecastTable th:first-child {
-  z-index: 6;
-}
-
-/* 左側の項目列を固定（画面左端に揃える） */
+/* --- 左側の項目列を固定（分割前仕様を完全再現） --- */
 .forecastTable td:first-child,
 .forecastTable th:first-child {
   position: sticky;
   left: 0;
   width: 6ch;
-  /* ★ 全角3文字＋改行後の単位が収まる幅 */
   min-width: 6ch;
   max-width: 6ch;
-  background: #ffffff;
+  background: #f0f4ff !important;
   z-index: 5;
   font-weight: bold;
   border-right: 1px solid #ccc;
@@ -176,33 +131,19 @@ body {
   padding-left: 4px;
 }
 
-/* 左上のセル（項目＼時間）を最前面に */
+/* 左上セルはさらに上に重ねる */
 .forecastTable th:first-child {
   z-index: 6;
 }
 
-/* 左の項目列の背景色 */
-.forecastTable td:first-child,
-.forecastTable th:first-child {
-  background: #f0f4ff !important;
-  /* ← 好きな色に変更可能 */
-}
-
-/* ヘッダー（日時）の文字色を黒に */
-.forecastTable th {
-  color: #000 !important;
-}
-
-/* 左の項目列と同じ背景色をヘッダーにも適用 */
+/* ヘッダー（日時）の文字色を黒に（分割前仕様） */
 .forecastTable thead th {
   background: #f0f4ff !important;
   color: #000 !important;
-  /* ← 文字色は黒で固定 */
 }
 
-/* 天気アイコンだけ大きくする（項目セルは除外） */
+/* --- 天気アイコンだけ大きくする（分割前仕様） --- */
 .forecastTable tbody tr:nth-child(1) td:not(:first-child) {
   font-size: 28px;
-  /* ← 好きな大きさに調整 */
   line-height: 1.2;
 }

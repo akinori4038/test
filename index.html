@@ -6,8 +6,8 @@
   <title>海上GPSビューア（地図＋天気/海況）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <!-- Leaflet CSS（必須） -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <!-- 自分のCSS -->
   <link rel="stylesheet" href="style.css" />
@@ -29,7 +29,7 @@
       <div class="controls">
         <button id="locBtn" class="btn" type="button">追従開始</button>
 
-        <!-- ★ GPX保存ボタン（map.js が参照） -->
+        <!-- ★ GPX保存ボタン -->
         <button id="saveGpxBtn" class="btn" type="button">GPX保存</button>
 
         <div id="status" class="status">
@@ -47,11 +47,11 @@
 
   </div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <!-- Leaflet JS（グローバル L を提供） -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- 回転マーカー -->
-  <script src="https://rawcdn.githack.com/bbecquet/Leaflet.RotatedMarker/master/leaflet.rotatedMarker.js"></script>
+  <!-- RotatedMarker（CORS 安定版） -->
+  <script src="https://cdn.jsdelivr.net/gh/bbecquet/Leaflet.RotatedMarker/leaflet.rotatedMarker.js"></script>
 
   <!-- ★ ES Modules として読み込む（最重要） -->
   <script type="module" src="app.js"></script>
