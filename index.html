@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <!-- 自分のCSS -->
   <link rel="stylesheet" href="style.css" />
@@ -28,6 +28,10 @@
 
       <div class="controls">
         <button id="locBtn" class="btn" type="button">追従開始</button>
+
+        <!-- ★ ウェイポイント距離・方位表示 -->
+        <div id="navInfo" class="status"></div>
+
         <div id="status" class="status">
           位置情報の許可をすると、現在地を中心に船アイコンと軌跡が表示されます。
         </div>
@@ -44,13 +48,13 @@
   </div>
 
   <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- 回転マーカー -->
-  <script src="https://rawcdn.githack.com/bbecquet/Leaflet.RotatedMarker/master/leaflet.rotatedMarker.js"></script>
+  <!-- RotatedMarker（安定版） -->
+  <script src="https://cdn.jsdelivr.net/gh/bbecquet/Leaflet.RotatedMarker/leaflet.rotatedMarker.js"></script>
 
-  <!-- 自分のJS -->
-  <script src="app.js"></script>
+  <!-- ES Modules -->
+  <script type="module" src="app.js"></script>
 </body>
 
 </html>
