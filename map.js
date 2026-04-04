@@ -100,9 +100,8 @@ export function initMap() {
   const navInfo = document.getElementById("navInfo");
 
   /* --- チェックボックスのクリックを地図に伝えない（WP誤設定防止） --- */
-  trackCheckbox.addEventListener("click", (e) => {
-    e.stopPropagation();
-  });
+  trackCheckbox.addEventListener("click", (e) => e.stopPropagation());
+  trackChk.addEventListener("click", (e) => e.stopPropagation());
 
   /* --- 初期状態 --- */
   isTracking = trackChk.checked;
