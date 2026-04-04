@@ -200,9 +200,9 @@ body {
   /* ← 文字色は黒で固定 */
 }
 
-/* 天気アイコンを一回り大きく */
-.forecastTable tr:nth-child(1) td {
+/* 天気アイコンだけ大きくする（項目セルは除外） */
+.forecastTable tbody tr:nth-child(1) td:not(:first-child) {
   font-size: 28px;
-  /* ← 好きな大きさに調整可能（デフォルトは16px前後） */
+  /* ← 好きな大きさに調整 */
   line-height: 1.2;
 }
