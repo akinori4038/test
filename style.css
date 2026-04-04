@@ -9,10 +9,11 @@ body {
   position: relative;
 }
 
-/* ★ 地図上のチェックボックス */
+/* ★ 地図左下の中央固定チェックボックス */
 .mapCheckbox {
   position: absolute;
-  top: 10px;
+  bottom: 10px;
+  /* ← 左下配置 */
   left: 10px;
   background: rgba(255, 255, 255, 0.85);
   padding: 6px 10px;
@@ -20,6 +21,8 @@ body {
   font-size: 16px;
   z-index: 9999;
   user-select: none;
+  pointer-events: auto;
+  /* ← UIクリック可能 */
 }
 
 .mapCheckbox input {

@@ -13,7 +13,7 @@ let waypointLine = null;
 let isTracking = true;   // 中央固定 ON/OFF
 let isPathOn = false;    // 軌跡 ON/OFF（初期OFF）
 
-/* --- カヤック SVG アイコン（誤記修正済み） --- */
+/* --- カヤック SVG アイコン（修正版） --- */
 const kayakSvg = `<svg width="60" height="60" viewBox="0 0 100 100"
 xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -94,12 +94,18 @@ export function initMap() {
   let trackLine = L.polyline([], { color: "red", weight: 3 }).addTo(map);
 
   const trackChk = document.getElementById("trackChk");
+  const trackCheckbox = document.getElementById("trackCheckbox");
   const pathBtn = document.getElementById("pathBtn");
   const wpClearBtn = document.getElementById("wpClearBtn");
   const navInfo = document.getElementById("navInfo");
 
+  /* --- チェックボックスのクリックを地図に伝えない（WP誤設定防止） --- */
+  trackCheckbox.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+
   /* --- 初期状態 --- */
-  isTracking = trackChk.checked;  // 中央固定
+  isTracking = trackChk.checked;
   wpClearBtn.style.background = "#888";
   wpClearBtn.disabled = true;
 
