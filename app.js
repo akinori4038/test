@@ -94,29 +94,29 @@ xmlns="http://www.w3.org/2000/svg">
     const down = (deg + 180) % 360;
 
     let color = "#4da3ff";                 // 0〜3 青
-    if (speed >= 4 && speed < 7) color = "#3cb371";       // 4〜6.x 緑
-    else if (speed >= 7 && speed < 10) color = "#ffa500"; // 7〜9.x 橙
-    else if (speed >= 10 && speed < 20) color = "#ff4500";// 10〜19.x 赤
+    if (speed >= 4 && speed < 7) color = "#3cb371";       // 4〜6 緑
+    else if (speed >= 7 && speed < 10) color = "#ffa500"; // 7〜9 橙
+    else if (speed >= 10 && speed < 20) color = "#ff4500";// 10〜19 赤
     else if (speed >= 20) color = "#8000ff";              // 20〜 紫
 
     const arrowSvg = `
-    <svg width="22" height="22" viewBox="0 0 100 100">
-      <polygon points="50,5 70,95 30,95" fill="${color}"/>
-    </svg>
-  `;
+      <svg width="22" height="22" viewBox="0 0 100 100">
+        <polygon points="50,5 70,95 30,95" fill="${color}"/>
+      </svg>
+    `;
 
     return `
-    <div style="
-      width:22px;
-      height:22px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      transform: rotate(${down}deg);
-    ">
-      ${arrowSvg}
-    </div>
-  `;
+      <div style="
+        width:22px;
+        height:22px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        transform: rotate(${down}deg);
+      ">
+        ${arrowSvg}
+      </div>
+    `;
   }
 
   /* --- 天気＋海況 API --- */
@@ -139,7 +139,7 @@ xmlns="http://www.w3.org/2000/svg">
     }
   }
 
-  /* --- 3日分 × 1時間予報の表（縦横逆転＋SVG風向） --- */
+  /* --- 3日分 × 1時間予報の表（縦横逆転＋SVG風向＋現在時刻ハイライト） --- */
   function updateForecastDisplay(weather, marine) {
     updateLastUpdateTime();
 
@@ -164,6 +164,15 @@ xmlns="http://www.w3.org/2000/svg">
       return `${mm}/${dd} ${hh}時`;
     });
 
+    /* --- 現在時刻の列をハイライト --- */
+    const now = new Date();
+    const nowMM = String(now.getMonth() + 1).padStart(2, "0");
+    const nowDD = String(now.getDate()).padStart(2, "0");
+    const nowHH = String(now.getHours()).padStart(2, "0");
+    const nowLabel = `${nowMM}/${nowDD} ${nowHH}時`;
+
+    const highlightIndex = formattedTimes.indexOf(nowLabel);
+
     let html = `
     <div class="forecastTableWrapper">
       <table class="forecastTable">
@@ -173,7 +182,10 @@ xmlns="http://www.w3.org/2000/svg">
     `;
 
     for (let i = 0; i < 72; i++) {
-      html += `<th>${formattedTimes[i]}</th>`;
+      const highlightStyle = (i === highlightIndex)
+        ? `style="background:#fff7b2; font-weight:bold; border-left:2px solid #e0b800; border-right:2px solid #e0b800;"`
+        : "";
+      html += `<th ${highlightStyle}>${formattedTimes[i]}</th>`;
     }
 
     html += `
@@ -186,7 +198,7 @@ xmlns="http://www.w3.org/2000/svg">
       { label: "天気", data: weatherCode.map(c => weatherIcon(c)) },
       { label: "気温(℃)", data: temp },
       { label: "風速(m/s)", data: wind },
-      { label: "風向", data: windDir.map((d, i) => windArrowSvg(d, wind[i])) },  // ★ SVG矢印＋色分け
+      { label: "風向", data: windDir.map((d, i) => windArrowSvg(d, wind[i])) },
       { label: "波高(m)", data: wave },
       { label: "うねり高(m)", data: swell },
       { label: "海面水温(℃)", data: sst }
@@ -195,7 +207,10 @@ xmlns="http://www.w3.org/2000/svg">
     rows.forEach(row => {
       html += `<tr><td>${row.label}</td>`;
       for (let i = 0; i < 72; i++) {
-        html += `<td>${row.data[i]}</td>`;
+        const highlightStyle = (i === highlightIndex)
+          ? `style="background:#fff7b2; border-left:2px solid #e0b800; border-right:2px solid #e0b800;"`
+          : "";
+        html += `<td ${highlightStyle}>${row.data[i]}</td>`;
       }
       html += `</tr>`;
     });
