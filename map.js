@@ -4,7 +4,7 @@ import { renderForecast } from "./forecastTable.js";
 /* --- 追跡用の配列（lat, lng のみ） --- */
 export let trackCoords = [];
 
-/* --- カヤック SVG アイコン（分割前仕様を完全再現） --- */
+/* --- カヤック SVG アイコン --- */
 const kayakSvg = `<svg width="60" height="60" viewBox="0 0 100 100"
 xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -40,8 +40,8 @@ const kayakIcon = L.icon({
 /* --- map.js のメイン --- */
 export function initMap() {
 
-  /* --- 地図初期化（分割前仕様） --- */
-  const map = L.map("map").setView([35.681236, 139.767125], 5);
+  /* --- 地図初期化（ズーム17に変更） --- */
+  const map = L.map("map").setView([35.681236, 139.767125], 17);
 
   /* ★ app.js の activateTab() が参照するため必須 */
   window._leaflet_map_instance = map;
@@ -58,7 +58,7 @@ export function initMap() {
   const locBtn = document.getElementById("locBtn");
   const status = document.getElementById("status");
 
-  /* --- 位置更新（lat,lng のみ使用） --- */
+  /* --- 位置更新（lat,lng のみ） --- */
   async function onLocationUpdate(pos) {
     const lat = pos.coords.latitude;
     const lng = pos.coords.longitude;
@@ -76,7 +76,7 @@ export function initMap() {
       marker.setRotationAngle(heading || 0);
     }
 
-    /* --- 軌跡更新（元の仕様に戻す：lat,lng のみ） --- */
+    /* --- 軌跡更新 --- */
     trackCoords.push([lat, lng]);
     trackLine.setLatLngs(trackCoords);
 
@@ -96,7 +96,38 @@ export function initMap() {
     status.textContent = "位置情報エラー: " + err.message;
   }
 
-  /* --- 追従トグル（分割前仕様） --- */
+  /* --- ★ 起動時に現在位置を1回取得してセンタリング --- */
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+
+      map.setView([lat, lng], 17);
+
+      marker = L.marker([lat, lng], {
+        icon: kayakIcon
+      }).addTo(map);
+
+      trackCoords.push([lat, lng]);
+      trackLine.setLatLngs(trackCoords);
+
+      status.textContent = "追従中…";
+    },
+    onError,
+    { enableHighAccuracy: true }
+  );
+
+  /* --- ★ 起動直後から追従開始（watchPosition 自動ON） --- */
+  watchId = navigator.geolocation.watchPosition(onLocationUpdate, onError, {
+    enableHighAccuracy: true,
+    maximumAge: 0,
+    timeout: 10000
+  });
+
+  /* ボタンの初期状態を「追従停止」にする */
+  locBtn.textContent = "追従停止";
+
+  /* --- 追従トグル（手動で停止/再開） --- */
   locBtn.addEventListener("click", () => {
     if (watchId !== null) {
       navigator.geolocation.clearWatch(watchId);
@@ -116,9 +147,7 @@ export function initMap() {
     status.textContent = "追従中…";
   });
 
-  /* --- GPX保存機能は完全削除済み --- */
-
-  /* --- タブ切り替え時の map.invalidateSize（分割前仕様） --- */
+  /* --- タブ切り替え時の map.invalidateSize --- */
   document.getElementById("tabMap").addEventListener("click", () => {
     setTimeout(() => map.invalidateSize(), 50);
   });
