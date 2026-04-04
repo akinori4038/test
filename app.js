@@ -99,22 +99,27 @@ xmlns="http://www.w3.org/2000/svg">
     return "";
   }
 
-  /* --- 鋭角 SVG 風向矢印（風速で色分け） --- */
+  /* --- 風速に応じた色（風向アイコンと風速文字で共通化） --- */
+  function windColor(speed) {
+    speed = Number(speed);
+
+    if (speed < 1) return "#999999";      // 無風〜微風
+    if (speed >= 1 && speed < 4) return "#4da3ff";
+    if (speed >= 4 && speed < 7) return "#3cb371";
+    if (speed >= 7 && speed < 10) return "#ffa500";
+    if (speed >= 10 && speed < 20) return "#ff4500";
+    if (speed >= 20) return "#8000ff";
+
+    return "#4da3ff";
+  }
+
+  /* --- 鋭角 SVG 風向矢印 --- */
   function windArrowSvg(deg, speed) {
     if (deg === null || deg === undefined) return "？";
 
-    speed = Number(speed);
     const down = (deg + 180) % 360;
+    const color = windColor(speed);
 
-    let color = "#4da3ff"; // デフォルト（2〜3m/s）
-
-    // ★ 1m/s 以下はグレー
-    if (speed < 1) color = "#999999";
-    else if (speed >= 1 && speed < 4) color = "#4da3ff";
-    else if (speed >= 4 && speed < 7) color = "#3cb371";
-    else if (speed >= 7 && speed < 10) color = "#ffa500";
-    else if (speed >= 10 && speed < 20) color = "#ff4500";
-    else if (speed >= 20) color = "#8000ff";
     const arrowSvg = `
       <svg width="22" height="22" viewBox="0 0 100 100">
         <polygon points="50,5 70,95 30,95" fill="${color}"/>
@@ -238,11 +243,17 @@ xmlns="http://www.w3.org/2000/svg">
           extraStyle = precipColor(row.data[i]);
         }
 
+        /* --- 風速セルの文字色を風向アイコンと統一 --- */
+        let textColor = "";
+        if (row.rawLabel === "風速(m/s)") {
+          textColor = `color:${windColor(row.data[i])};`;
+        }
+
         const highlightStyle = (i === highlightIndex)
           ? `background:#fff7b2; border-left:2px solid #e0b800; border-right:2px solid #e0b800;`
           : "";
 
-        html += `<td style="${extraStyle} ${highlightStyle}">${row.data[i]}</td>`;
+        html += `<td style="${extraStyle} ${highlightStyle} ${textColor}">${row.data[i]}</td>`;
       }
       html += `</tr>`;
     });
