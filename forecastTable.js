@@ -72,13 +72,13 @@ export function renderForecast(weather, marine) {
     { rawLabel: "海水温(℃)", label: splitLabel("海水温(℃)"), data: sst }
   ];
 
-  /* --- HTML生成（分割前仕様を完全再現） --- */
+  /* --- HTML生成（左列は labelCell で固定幅） --- */
   let html = `
     <div class="forecastTableWrapper">
       <table class="forecastTable">
         <thead>
           <tr>
-            <th>日時</th>
+            <th class="labelCell">日時</th>
   `;
 
   formattedTimes.forEach(t => {
@@ -92,8 +92,16 @@ export function renderForecast(weather, marine) {
   `;
 
   rows.forEach(row => {
-    html += `<tr><td>${row.label}</td>`;
+    /* --- 左列（splitLabel により 2 行構成） --- */
+    html += `
+      <tr>
+        <td class="labelCell">
+          ${row.label[0]}
+          <span class="unit">${row.label[1] ?? ""}</span>
+        </td>
+    `;
 
+    /* --- 72時間分のセル --- */
     for (let i = 0; i < 72; i++) {
       let extraStyle = "";
       let textColor = "";

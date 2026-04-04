@@ -115,3 +115,36 @@ body {
 .forecastBox {
   font-size: 16px;
 }
+
+/* ============================
+   天気・海況テーブルの左列（全角3文字＋単位2行目）
+============================ */
+.forecastBox table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.forecastBox th,
+.forecastBox td {
+  padding: 4px 6px;
+  font-size: 14px;
+  border-bottom: 1px solid #ccc;
+}
+
+/* ★ 左列：全角3文字幅（=6ch）＋単位は2行目 */
+.forecastBox .labelCell {
+  width: 6ch;
+  min-width: 6ch;
+  max-width: 6ch;
+  white-space: nowrap;
+  text-align: left;
+  vertical-align: top;
+}
+
+/* 単位は2行目に表示 */
+.forecastBox .labelCell .unit {
+  display: block;
+  font-size: 12px;
+  margin-top: 2px;
+  white-space: nowrap;
+}
