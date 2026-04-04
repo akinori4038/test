@@ -135,7 +135,7 @@ xmlns="http://www.w3.org/2000/svg">
   /* --- 項目名と単位を2行に分ける --- */
   function splitLabel(label) {
     const match = label.match(/^(.+?)\((.+?)\)$/);
-    if (!match) return label;  // 単位なし（天気など）
+    if (!match) return label;
     const name = match[1];
     const unit = match[2];
     return `${name}<br><span style="font-size:12px; color:#555;">(${unit})</span>`;
@@ -161,7 +161,7 @@ xmlns="http://www.w3.org/2000/svg">
     }
   }
 
-  /* --- 3日分 × 1時間予報の表（現在時刻ハイライト＋降水量色分け） --- */
+  /* --- 3日分 × 1時間予報の表 --- */
   function updateForecastDisplay(weather, marine) {
     updateLastUpdateTime();
 
@@ -202,7 +202,6 @@ xmlns="http://www.w3.org/2000/svg">
             <th>項目＼時間</th>
     `;
 
-    /* --- ヘッダーはハイライトしない --- */
     for (let i = 0; i < 72; i++) {
       html += `<th>${formattedTimes[i]}</th>`;
     }
@@ -213,15 +212,16 @@ xmlns="http://www.w3.org/2000/svg">
         <tbody>
     `;
 
+    /* --- rows を rawLabel + label の2つ持ちにする --- */
     const rows = [
-      { label: splitLabel("天気"), data: weatherCode.map(c => weatherIcon(c)) },
-      { label: splitLabel("降水量(mm)"), data: precip },
-      { label: splitLabel("気温(℃)"), data: temp },
-      { label: splitLabel("風速(m/s)"), data: wind },
-      { label: splitLabel("風向"), data: windDir.map((d, i) => windArrowSvg(d, wind[i])) },
-      { label: splitLabel("波高(m)"), data: wave },
-      { label: splitLabel("うねり(m)"), data: swell },
-      { label: splitLabel("海水温(℃)"), data: sst }
+      { rawLabel: "天気", label: splitLabel("天気"), data: weatherCode.map(c => weatherIcon(c)) },
+      { rawLabel: "降水量(mm)", label: splitLabel("降水量(mm)"), data: precip },
+      { rawLabel: "気温(℃)", label: splitLabel("気温(℃)"), data: temp },
+      { rawLabel: "風速(m/s)", label: splitLabel("風速(m/s)"), data: wind },
+      { rawLabel: "風向", label: splitLabel("風向"), data: windDir.map((d, i) => windArrowSvg(d, wind[i])) },
+      { rawLabel: "波高(m)", label: splitLabel("波高(m)"), data: wave },
+      { rawLabel: "うねり(m)", label: splitLabel("うねり(m)"), data: swell },
+      { rawLabel: "海水温(℃)", label: splitLabel("海水温(℃)"), data: sst }
     ];
 
     rows.forEach(row => {
@@ -230,12 +230,11 @@ xmlns="http://www.w3.org/2000/svg">
 
         let extraStyle = "";
 
-        /* --- 降水量の色分け --- */
-        if (row.label === "降水量(mm)") {
+        /* --- 降水量の色分け（rawLabel で判定） --- */
+        if (row.rawLabel === "降水量(mm)") {
           extraStyle = precipColor(row.data[i]);
         }
 
-        /* --- 現在時刻の列ハイライト（データ部分のみ） --- */
         const highlightStyle = (i === highlightIndex)
           ? `background:#fff7b2; border-left:2px solid #e0b800; border-right:2px solid #e0b800;`
           : "";
