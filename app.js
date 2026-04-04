@@ -86,6 +86,19 @@ xmlns="http://www.w3.org/2000/svg">
     return "❓";
   }
 
+  /* --- 降水量の色分け --- */
+  function precipColor(p) {
+    p = Number(p);
+
+    if (p === 0) return "";
+    if (p > 0 && p < 1) return "background:#d0e7ff;";
+    if (p >= 1 && p < 5) return "background:#7fbfff;";
+    if (p >= 5 && p < 20) return "background:#005bff; color:white;";
+    if (p >= 20) return "background:#8000ff; color:white;";
+
+    return "";
+  }
+
   /* --- 鋭角 SVG 風向矢印（風速で色分け） --- */
   function windArrowSvg(deg, speed) {
     if (deg === null || deg === undefined) return "？";
@@ -93,11 +106,11 @@ xmlns="http://www.w3.org/2000/svg">
     speed = Number(speed);
     const down = (deg + 180) % 360;
 
-    let color = "#4da3ff";                 // 0〜3 青
-    if (speed >= 4 && speed < 7) color = "#3cb371";       // 4〜6 緑
-    else if (speed >= 7 && speed < 10) color = "#ffa500"; // 7〜9 橙
-    else if (speed >= 10 && speed < 20) color = "#ff4500";// 10〜19 赤
-    else if (speed >= 20) color = "#8000ff";              // 20〜 紫
+    let color = "#4da3ff";
+    if (speed >= 4 && speed < 7) color = "#3cb371";
+    else if (speed >= 7 && speed < 10) color = "#ffa500";
+    else if (speed >= 10 && speed < 20) color = "#ff4500";
+    else if (speed >= 20) color = "#8000ff";
 
     const arrowSvg = `
       <svg width="22" height="22" viewBox="0 0 100 100">
@@ -123,7 +136,7 @@ xmlns="http://www.w3.org/2000/svg">
   async function fetchWeatherMarine(lat, lng) {
     const weatherUrl =
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}` +
-      `&hourly=temperature_2m,wind_speed_10m,wind_direction_10m,weathercode,cloudcover,surface_pressure&timezone=auto`;
+      `&hourly=temperature_2m,wind_speed_10m,wind_direction_10m,weathercode,cloudcover,surface_pressure,precipitation&timezone=auto`;
 
     const marineUrl =
       `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}` +
@@ -139,7 +152,7 @@ xmlns="http://www.w3.org/2000/svg">
     }
   }
 
-  /* --- 3日分 × 1時間予報の表（現在時刻ハイライト） --- */
+  /* --- 3日分 × 1時間予報の表（現在時刻ハイライト＋降水量色分け） --- */
   function updateForecastDisplay(weather, marine) {
     updateLastUpdateTime();
 
@@ -150,12 +163,12 @@ xmlns="http://www.w3.org/2000/svg">
     const wind = weather.hourly.wind_speed_10m;
     const windDir = weather.hourly.wind_direction_10m;
     const weatherCode = weather.hourly.weathercode;
+    const precip = weather.hourly.precipitation;
 
     const wave = marine.hourly.wave_height;
     const swell = marine.hourly.swell_wave_height;
     const sst = marine.hourly.sea_surface_temperature;
 
-    // ★ 時刻フォーマット（MM/DD hh時）
     const formattedTimes = times.slice(0, 72).map(t => {
       const d = new Date(t);
       const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -164,7 +177,6 @@ xmlns="http://www.w3.org/2000/svg">
       return `${mm}/${dd} ${hh}時`;
     });
 
-    /* --- 現在時刻の列をハイライト --- */
     const now = new Date();
     const nowMM = String(now.getMonth() + 1).padStart(2, "0");
     const nowDD = String(now.getDate()).padStart(2, "0");
@@ -194,6 +206,7 @@ xmlns="http://www.w3.org/2000/svg">
 
     const rows = [
       { label: "天気", data: weatherCode.map(c => weatherIcon(c)) },
+      { label: "降水量(mm)", data: precip },
       { label: "気温(℃)", data: temp },
       { label: "風速(m/s)", data: wind },
       { label: "風向", data: windDir.map((d, i) => windArrowSvg(d, wind[i])) },
@@ -205,10 +218,20 @@ xmlns="http://www.w3.org/2000/svg">
     rows.forEach(row => {
       html += `<tr><td>${row.label}</td>`;
       for (let i = 0; i < 72; i++) {
+
+        let extraStyle = "";
+
+        /* --- 降水量の色分け --- */
+        if (row.label === "降水量(mm)") {
+          extraStyle = precipColor(row.data[i]);
+        }
+
+        /* --- 現在時刻の列ハイライト（データ部分のみ） --- */
         const highlightStyle = (i === highlightIndex)
-          ? `style="background:#fff7b2; border-left:2px solid #e0b800; border-right:2px solid #e0b800;"`
+          ? `background:#fff7b2; border-left:2px solid #e0b800; border-right:2px solid #e0b800;`
           : "";
-        html += `<td ${highlightStyle}>${row.data[i]}</td>`;
+
+        html += `<td style="${extraStyle} ${highlightStyle}">${row.data[i]}</td>`;
       }
       html += `</tr>`;
     });
