@@ -6,7 +6,7 @@
   <title>海上GPSビューア（地図＋天気/海況）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Leaflet CSS（必須） -->
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <!-- 自分のCSS -->
@@ -29,8 +29,7 @@
       <div class="controls">
         <button id="locBtn" class="btn" type="button">追従開始</button>
 
-        <!-- ★ GPX保存ボタン -->
-        <button id="saveGpxBtn" class="btn" type="button">GPX保存</button>
+        <!-- ★ GPX保存ボタンは削除済み -->
 
         <div id="status" class="status">
           位置情報の許可をすると、現在地を中心に船アイコンと軌跡が表示されます。
@@ -47,13 +46,13 @@
 
   </div>
 
-  <!-- Leaflet JS（グローバル L を提供） -->
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- RotatedMarker（CORS 安定版） -->
+  <!-- RotatedMarker（安定版） -->
   <script src="https://cdn.jsdelivr.net/gh/bbecquet/Leaflet.RotatedMarker/leaflet.rotatedMarker.js"></script>
 
-  <!-- ★ ES Modules として読み込む（最重要） -->
+  <!-- ES Modules -->
   <script type="module" src="app.js"></script>
 </body>
 
