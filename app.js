@@ -90,34 +90,33 @@ xmlns="http://www.w3.org/2000/svg">
   function windArrowSvg(deg, speed) {
     if (deg === null || deg === undefined) return "？";
 
-    // ★ 風下方向にする
+    speed = Number(speed);
     const down = (deg + 180) % 360;
 
-    // ★ 風速で色分け
-    let color = "#4da3ff"; // 弱風（青）
-    if (speed >= 4 && speed <= 7) color = "#3cb371";      // 中風（緑）
-    else if (speed >= 8 && speed <= 12) color = "#ffa500"; // 強風（橙）
-    else if (speed >= 13) color = "#ff4500";               // 非常に強い風（赤）
+    let color = "#4da3ff";                 // 0〜3 青
+    if (speed >= 4 && speed < 7) color = "#3cb371";       // 4〜6.x 緑
+    else if (speed >= 7 && speed < 10) color = "#ffa500"; // 7〜9.x 橙
+    else if (speed >= 10 && speed < 20) color = "#ff4500";// 10〜19.x 赤
+    else if (speed >= 20) color = "#8000ff";              // 20〜 紫
 
-    // ★ 鋭角で細長い矢印
     const arrowSvg = `
-      <svg width="22" height="22" viewBox="0 0 100 100">
-        <polygon points="50,5 70,95 30,95" fill="${color}"/>
-      </svg>
-    `;
+    <svg width="22" height="22" viewBox="0 0 100 100">
+      <polygon points="50,5 70,95 30,95" fill="${color}"/>
+    </svg>
+  `;
 
     return `
-      <div style="
-        width:22px;
-        height:22px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        transform: rotate(${down}deg);
-      ">
-        ${arrowSvg}
-      </div>
-    `;
+    <div style="
+      width:22px;
+      height:22px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transform: rotate(${down}deg);
+    ">
+      ${arrowSvg}
+    </div>
+  `;
   }
 
   /* --- 天気＋海況 API --- */
