@@ -88,10 +88,9 @@ export function initMap() {
 
   const locBtn = document.getElementById("locBtn");
   const wpClearBtn = document.getElementById("wpClearBtn");
-  const status = document.getElementById("status");
   const navInfo = document.getElementById("navInfo");
 
-  /* --- ★ ウェイポイント削除処理（initMap 内に移動） --- */
+  /* --- ★ ウェイポイント削除処理（initMap 内） --- */
   function clearWaypoint() {
     waypoint = null;
 
@@ -147,7 +146,7 @@ export function initMap() {
     trackCoords.push([lat, lng]);
     trackLine.setLatLngs(trackCoords);
 
-    /* --- ウェイポイントがある場合、距離・方位・直線を更新 --- */
+    /* --- ウェイポイントがある場合 --- */
     if (waypoint) {
       const [wlat, wlng] = waypoint;
 
@@ -182,10 +181,10 @@ export function initMap() {
   }
 
   function onError(err) {
-    status.textContent = "位置情報エラー: " + err.message;
+    console.warn("位置情報エラー:", err.message);
   }
 
-  /* --- 起動時に追従開始 --- */
+  /* --- 起動時にトラッキング開始 --- */
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       const lat = pos.coords.latitude;
@@ -197,27 +196,29 @@ export function initMap() {
 
       trackCoords.push([lat, lng]);
       trackLine.setLatLngs(trackCoords);
-
-      status.textContent = "追従中…";
     },
     onError,
     { enableHighAccuracy: true }
   );
 
+  /* --- ★ トラッキング開始（初期状態 ON） --- */
   watchId = navigator.geolocation.watchPosition(onLocationUpdate, onError, {
     enableHighAccuracy: true,
     maximumAge: 0,
     timeout: 10000
   });
 
-  locBtn.textContent = "追従停止";
+  locBtn.textContent = "トラッキング中";
+  locBtn.style.background = "#d40000";
 
+  /* --- トラッキング ON/OFF --- */
   locBtn.addEventListener("click", () => {
     if (watchId !== null) {
       navigator.geolocation.clearWatch(watchId);
       watchId = null;
-      locBtn.textContent = "追従開始";
-      status.textContent = "追従停止中";
+
+      locBtn.textContent = "トラッキング停止";
+      locBtn.style.background = "#0078d4";
       return;
     }
 
@@ -227,8 +228,8 @@ export function initMap() {
       timeout: 10000
     });
 
-    locBtn.textContent = "追従停止";
-    status.textContent = "追従中…";
+    locBtn.textContent = "トラッキング中";
+    locBtn.style.background = "#d40000";
   });
 
   document.getElementById("tabMap").addEventListener("click", () => {
