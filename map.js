@@ -9,6 +9,9 @@ let waypoint = null;
 let waypointMarker = null;
 let waypointLine = null;
 
+/* --- トラッキング状態（軌跡ON/OFF + 中央固定ON/OFF） --- */
+let isTracking = true;
+
 /* --- カヤック SVG アイコン --- */
 const kayakSvg = `<svg width="60" height="60" viewBox="0 0 100 100"
 xmlns="http://www.w3.org/2000/svg">
@@ -72,9 +75,7 @@ function calcBearing(lat1, lon1, lat2, lon2) {
 /* --- map.js のメイン --- */
 export function initMap() {
 
-  /* --- 地図初期化（ズーム17） --- */
   const map = L.map("map").setView([35.681236, 139.767125], 17);
-
   window._leaflet_map_instance = map;
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -84,17 +85,16 @@ export function initMap() {
 
   let marker = null;
   let trackLine = L.polyline([], { color: "red", weight: 3 }).addTo(map);
-  let watchId = null;
 
   const locBtn = document.getElementById("locBtn");
   const wpClearBtn = document.getElementById("wpClearBtn");
   const navInfo = document.getElementById("navInfo");
 
-  /* --- WP削除ボタン初期状態（未設定 → グレー） --- */
+  /* --- WP削除ボタン初期状態 --- */
   wpClearBtn.style.background = "#888";
   wpClearBtn.disabled = true;
 
-  /* --- ★ ウェイポイント削除処理（initMap 内） --- */
+  /* --- WP削除処理 --- */
   function clearWaypoint() {
     waypoint = null;
 
@@ -110,15 +110,13 @@ export function initMap() {
 
     navInfo.textContent = "";
 
-    /* WP未設定 → グレー */
     wpClearBtn.style.background = "#888";
     wpClearBtn.disabled = true;
   }
 
-  /* --- WP削除ボタン --- */
   wpClearBtn.addEventListener("click", clearWaypoint);
 
-  /* --- ウェイポイント設定（地図タップ） --- */
+  /* --- WP設定（地図タップ） --- */
   map.on("click", (e) => {
     const lat = e.latlng.lat;
     const lng = e.latlng.lng;
@@ -126,25 +124,24 @@ export function initMap() {
     waypoint = [lat, lng];
 
     if (waypointMarker) map.removeLayer(waypointMarker);
-    waypointMarker = L.marker([lat, lng], { color: "green" }).addTo(map);
+    waypointMarker = L.marker([lat, lng]).addTo(map);
 
     if (waypointLine) map.removeLayer(waypointLine);
     waypointLine = L.polyline([], { color: "blue", weight: 2 }).addTo(map);
 
-    /* ★ メッセージ表示は不要 → navInfo は空のまま */
     navInfo.textContent = "";
 
-    /* WP設定 → 青 */
     wpClearBtn.style.background = "#0078d4";
     wpClearBtn.disabled = false;
   });
 
-  /* --- 位置更新 --- */
+  /* --- 位置更新（常に実行） --- */
   async function onLocationUpdate(pos) {
     const lat = pos.coords.latitude;
     const lng = pos.coords.longitude;
     const heading = pos.coords.heading;
 
+    /* --- カヤックアイコンは常に更新 --- */
     if (!marker) {
       marker = L.marker([lat, lng], {
         icon: kayakIcon,
@@ -156,10 +153,15 @@ export function initMap() {
       marker.setRotationAngle(heading || 0);
     }
 
-    trackCoords.push([lat, lng]);
-    trackLine.setLatLngs(trackCoords);
+    /* --- トラッキング中なら軌跡を描く --- */
+    if (isTracking) {
+      trackCoords.push([lat, lng]);
+      trackLine.setLatLngs(trackCoords);
 
-    /* --- ウェイポイントがある場合 --- */
+      map.panTo([lat, lng], { animate: false });
+    }
+
+    /* --- WPがある場合 --- */
     if (waypoint) {
       const [wlat, wlng] = waypoint;
 
@@ -174,18 +176,15 @@ export function initMap() {
 
       waypointLine.setLatLngs([[lat, lng], [wlat, wlng]]);
 
-      /* --- ★ 距離 5m 以下なら自動削除 --- */
       if (dist <= 5) {
         clearWaypoint();
         navInfo.textContent = "ウェイポイント到達 → 自動削除";
       }
     }
 
-    /* --- 天気更新 --- */
+    /* --- 天気更新（地図タブのみ） --- */
     const isMapActive = document.getElementById("mapScreen").classList.contains("active");
     if (isMapActive) {
-      map.panTo([lat, lng], { animate: false });
-
       const { weather, marine } = await fetchWeatherMarine(lat, lng);
       if (weather && marine) {
         renderForecast(weather, marine);
@@ -193,56 +192,28 @@ export function initMap() {
     }
   }
 
-  function onError(err) {
+  navigator.geolocation.watchPosition(onLocationUpdate, (err) => {
     console.warn("位置情報エラー:", err.message);
-  }
-
-  /* --- 起動時にトラッキング開始 --- */
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-
-      map.setView([lat, lng], 17);
-
-      marker = L.marker([lat, lng], { icon: kayakIcon }).addTo(map);
-
-      trackCoords.push([lat, lng]);
-      trackLine.setLatLngs(trackCoords);
-    },
-    onError,
-    { enableHighAccuracy: true }
-  );
-
-  /* --- トラッキング開始（初期状態 ON） --- */
-  watchId = navigator.geolocation.watchPosition(onLocationUpdate, onError, {
+  }, {
     enableHighAccuracy: true,
     maximumAge: 0,
     timeout: 10000
   });
 
+  /* --- トラッキングボタン（軌跡ON/OFF + 中央固定ON/OFF） --- */
   locBtn.textContent = "トラッキング中";
   locBtn.style.background = "#d40000";
 
-  /* --- トラッキング ON/OFF --- */
   locBtn.addEventListener("click", () => {
-    if (watchId !== null) {
-      navigator.geolocation.clearWatch(watchId);
-      watchId = null;
+    isTracking = !isTracking;
 
+    if (isTracking) {
+      locBtn.textContent = "トラッキング中";
+      locBtn.style.background = "#d40000";
+    } else {
       locBtn.textContent = "トラッキング停止";
       locBtn.style.background = "#0078d4";
-      return;
     }
-
-    watchId = navigator.geolocation.watchPosition(onLocationUpdate, onError, {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 10000
-    });
-
-    locBtn.textContent = "トラッキング中";
-    locBtn.style.background = "#d40000";
   });
 
   document.getElementById("tabMap").addEventListener("click", () => {
