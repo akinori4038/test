@@ -132,6 +132,15 @@ xmlns="http://www.w3.org/2000/svg">
     `;
   }
 
+  /* --- 項目名と単位を2行に分ける --- */
+  function splitLabel(label) {
+    const match = label.match(/^(.+?)\((.+?)\)$/);
+    if (!match) return label;  // 単位なし（天気など）
+    const name = match[1];
+    const unit = match[2];
+    return `${name}<br><span style="font-size:12px; color:#555;">(${unit})</span>`;
+  }
+
   /* --- 天気＋海況 API --- */
   async function fetchWeatherMarine(lat, lng) {
     const weatherUrl =
