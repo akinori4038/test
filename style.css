@@ -187,3 +187,8 @@ body {
   background: #f0f4ff !important;
   /* ← 好きな色に変更可能 */
 }
+
+/* ヘッダー（日時）の文字色を黒に */
+.forecastTable th {
+  color: #000 !important;
+}

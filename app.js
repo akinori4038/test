@@ -207,7 +207,7 @@ xmlns="http://www.w3.org/2000/svg">
       <table class="forecastTable">
         <thead>
           <tr>
-            <th>項目＼時間</th>
+            <th>日時</th>
     `;
 
     for (let i = 0; i < 72; i++) {
