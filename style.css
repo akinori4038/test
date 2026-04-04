@@ -180,3 +180,10 @@ body {
 .forecastTable th:first-child {
   z-index: 6;
 }
+
+/* 左の項目列の背景色 */
+.forecastTable td:first-child,
+.forecastTable th:first-child {
+  background: #f0f4ff !important;
+  /* ← 好きな色に変更可能 */
+}
