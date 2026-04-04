@@ -6,54 +6,51 @@
   <title>海上GPSビューア（地図＋天気/海況）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-  <!-- 自分のCSS -->
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
   <div id="app">
 
-    <!-- ★ タブ -->
+    <!-- タブ -->
     <div class="tabs">
       <button id="tabMap" class="tab active">地図</button>
       <button id="tabForecast" class="tab">天気・海況</button>
     </div>
 
-    <!-- ★ 地図画面 -->
+    <!-- 地図画面 -->
     <div id="mapScreen" class="screen active">
 
       <div id="map">
 
-        <!-- ★ 中央固定チェックボックス（地図左下） -->
+        <!-- 中央固定チェック（左下） -->
         <label id="trackCheckbox" class="mapCheckbox">
           <input type="checkbox" id="trackChk" checked>
           中央固定
         </label>
 
+        <!-- WP距離・方向（右上） -->
+        <div id="navInfo" class="mapNavInfo"></div>
+
       </div>
 
       <div class="controls">
 
-        <!-- ★ 軌跡 ON/OFF ボタン（初期OFF） -->
+        <!-- 軌跡 ON/OFF -->
         <button id="pathBtn" class="btn" type="button">
           軌跡OFF
         </button>
 
-        <!-- ★ WP削除ボタン -->
+        <!-- WP削除 -->
         <button id="wpClearBtn" class="btn" type="button" style="background:#888; margin-left:8px;">
           WP削除
         </button>
 
-        <!-- ★ 距離・方位表示 -->
-        <div id="navInfo" class="status"></div>
-
       </div>
     </div>
 
-    <!-- ★ 天気・海況画面 -->
+    <!-- 天気・海況画面 -->
     <div id="forecastScreen" class="screen">
       <div id="forecast" class="forecastBox">
         天気・海況データを取得中…
@@ -62,13 +59,8 @@
 
   </div>
 
-  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- RotatedMarker -->
   <script src="https://cdn.jsdelivr.net/gh/bbecquet/Leaflet.RotatedMarker/leaflet.rotatedMarker.js"></script>
-
-  <!-- ES Modules -->
   <script type="module" src="app.js"></script>
 </body>
 
