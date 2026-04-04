@@ -27,14 +27,23 @@
       <div id="map"></div>
 
       <div class="controls">
-        <button id="locBtn" class="btn" type="button">追従開始</button>
 
-        <!-- ★ ウェイポイント削除ボタン -->
+        <!-- ★ 中央固定（トラッキング）ボタン -->
+        <button id="trackBtn" class="btn" type="button">
+          トラッキング中
+        </button>
+
+        <!-- ★ 軌跡 ON/OFF ボタン（初期OFF） -->
+        <button id="pathBtn" class="btn" type="button" style="margin-left:8px;">
+          軌跡OFF
+        </button>
+
+        <!-- ★ WP削除ボタン -->
         <button id="wpClearBtn" class="btn" type="button" style="background:#888; margin-left:8px;">
           WP削除
         </button>
 
-        <!-- ★ ウェイポイント距離・方位表示 -->
+        <!-- ★ 距離・方位表示 -->
         <div id="navInfo" class="status"></div>
 
       </div>
