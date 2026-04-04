@@ -49,12 +49,11 @@ xmlns="http://www.w3.org/2000/svg">
   /* --- 最終更新日時 --- */
   function updateLastUpdateTime() {
     const now = new Date();
-    const formatted =
-      now.getFullYear() + "/" +
-      String(now.getMonth() + 1).padStart(2, "0") + "/" +
-      String(now.getDate()).padStart(2, "0") + " " +
-      String(now.getHours()).padStart(2, "0") + ":" +
-      String(now.getMinutes()).padStart(2, "0");
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    const hh = String(now.getHours()).padStart(2, "0");
+
+    const formatted = `${mm}/${dd} ${hh}時`;
 
     const fc = document.getElementById("forecast");
 
@@ -69,6 +68,27 @@ xmlns="http://www.w3.org/2000/svg">
     div.textContent = "最終更新：" + formatted;
 
     fc.prepend(div);
+  }
+
+  /* --- 天気アイコン変換 --- */
+  function weatherIcon(code) {
+    if (code === 0) return "☀️";
+    if (code === 1 || code === 2) return "🌤️";
+    if (code === 3) return "☁️";
+    if (code === 45 || code === 48) return "🌫️";
+    if (code >= 51 && code <= 67) return "🌦️";
+    if (code >= 71 && code <= 77) return "🌨️";
+    if (code >= 80 && code <= 82) return "🌧️";
+    if (code >= 95) return "⛈️";
+    return "❓";
+  }
+
+  /* --- 風向 → 矢印 --- */
+  function windArrow(deg) {
+    if (deg === null || deg === undefined) return "？";
+    const dirs = ["↑", "↗", "→", "↘", "↓", "↙", "←", "↖"];
+    const index = Math.round(deg / 45) % 8;
+    return dirs[index];
   }
 
   /* --- 天気＋海況 API --- */
@@ -91,7 +111,7 @@ xmlns="http://www.w3.org/2000/svg">
     }
   }
 
-  /* --- 3日分 × 1時間予報の表を生成 --- */
+  /* --- 3日分 × 1時間予報の表（縦横逆転＋アイコン対応） --- */
   function updateForecastDisplay(weather, marine) {
     updateLastUpdateTime();
 
@@ -101,12 +121,13 @@ xmlns="http://www.w3.org/2000/svg">
     const temp = weather.hourly.temperature_2m;
     const wind = weather.hourly.wind_speed_10m;
     const windDir = weather.hourly.wind_direction_10m;
+    const weatherCode = weather.hourly.weathercode;
 
     const wave = marine.hourly.wave_height;
-    const waveDir = marine.hourly.wave_direction;
+    const swell = marine.hourly.swell_wave_height;
     const sst = marine.hourly.sea_surface_temperature;
 
-    // ★ 時刻をフォーマット（MM/DD hh時）
+    // ★ 時刻フォーマット（MM/DD hh時）
     const formattedTimes = times.slice(0, 72).map(t => {
       const d = new Date(t);
       const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -121,9 +142,8 @@ xmlns="http://www.w3.org/2000/svg">
         <thead>
           <tr>
             <th>項目＼時間</th>
-  `;
+    `;
 
-    // ★ 時刻を横方向に並べる
     for (let i = 0; i < 72; i++) {
       html += `<th>${formattedTimes[i]}</th>`;
     }
@@ -132,15 +152,16 @@ xmlns="http://www.w3.org/2000/svg">
           </tr>
         </thead>
         <tbody>
-  `;
+    `;
 
-    // ★ 各項目を縦方向に並べる（横に72時間分）
+    // ★ 行データ（天気アイコン・風向矢印・波向削除・うねり追加）
     const rows = [
+      { label: "天気", data: weatherCode.map(c => weatherIcon(c)) },
       { label: "気温(℃)", data: temp },
       { label: "風速(m/s)", data: wind },
-      { label: "風向(°)", data: windDir },
+      { label: "風向", data: windDir.map(d => windArrow(d)) },
       { label: "波高(m)", data: wave },
-      { label: "波向(°)", data: waveDir },
+      { label: "うねり高(m)", data: swell },
       { label: "海面水温(℃)", data: sst }
     ];
 
@@ -156,16 +177,15 @@ xmlns="http://www.w3.org/2000/svg">
         </tbody>
       </table>
     </div>
-  `;
+    `;
 
-    // ★ 最終更新の下にテーブルを再描画
     const lastUpdate = document.getElementById("lastUpdateTime");
     fc.innerHTML = "";
     fc.appendChild(lastUpdate);
     fc.insertAdjacentHTML("beforeend", html);
   }
 
-  /* --- 位置更新（追従中の横スクロール戻り対策あり） --- */
+  /* --- 位置更新（追従中のみ天気更新） --- */
   function onLocationUpdate(pos) {
     const lat = pos.coords.latitude;
     const lng = pos.coords.longitude;
@@ -188,7 +208,7 @@ xmlns="http://www.w3.org/2000/svg">
     const isMapActive = document.getElementById("mapScreen").classList.contains("active");
     if (isMapActive) {
       map.panTo([lat, lng], { animate: false });
-      fetchWeatherMarine(lat, lng);   // ★ 地図タブのときだけ更新
+      fetchWeatherMarine(lat, lng);
     }
   }
 
@@ -243,8 +263,6 @@ xmlns="http://www.w3.org/2000/svg">
       forecastScreen.classList.add("active");
       mapScreen.classList.remove("active");
 
-      // ★ 表は消さない
-
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
@@ -254,7 +272,7 @@ xmlns="http://www.w3.org/2000/svg">
           },
           (err) => {
             console.warn("位置情報エラー:", err.message);
-            updateLastUpdateTime();   // ★ エラーでも最終更新だけ更新
+            updateLastUpdateTime();
           },
           {
             enableHighAccuracy: true,
