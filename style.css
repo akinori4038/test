@@ -165,11 +165,9 @@ body {
   position: sticky;
   left: 0;
   width: 6ch;
-  /* 全角3文字 ≒ 半角6文字ぶん */
+  /* ★ 全角3文字＋改行後の単位が収まる幅 */
   min-width: 6ch;
   max-width: 6ch;
-  white-space: nowrap;
-  /* 折り返し禁止 */
   background: #ffffff;
   z-index: 5;
   font-weight: bold;

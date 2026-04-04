@@ -205,14 +205,14 @@ xmlns="http://www.w3.org/2000/svg">
     `;
 
     const rows = [
-      { label: "天気", data: weatherCode.map(c => weatherIcon(c)) },
-      { label: "降水量(mm)", data: precip },
-      { label: "気温(℃)", data: temp },
-      { label: "風速(m/s)", data: wind },
-      { label: "風向", data: windDir.map((d, i) => windArrowSvg(d, wind[i])) },
-      { label: "波高(m)", data: wave },
-      { label: "うねり(m)", data: swell },
-      { label: "海水温(℃)", data: sst }
+      { label: splitLabel("天気"), data: weatherCode.map(c => weatherIcon(c)) },
+      { label: splitLabel("降水量(mm)"), data: precip },
+      { label: splitLabel("気温(℃)"), data: temp },
+      { label: splitLabel("風速(m/s)"), data: wind },
+      { label: splitLabel("風向"), data: windDir.map((d, i) => windArrowSvg(d, wind[i])) },
+      { label: splitLabel("波高(m)"), data: wave },
+      { label: splitLabel("うねり(m)"), data: swell },
+      { label: splitLabel("海水温(℃)"), data: sst }
     ];
 
     rows.forEach(row => {
