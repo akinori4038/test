@@ -133,3 +133,28 @@ body {
 .forecastTable th:first-child {
   z-index: 6;
 }
+
+/* テーブル全体の横スクロール領域 */
+.forecastTableWrapper {
+  overflow-x: auto;
+  padding: 0;
+  /* ★ 左端ズレの原因を解消 */
+  margin: 0;
+}
+
+/* 左側の項目列を固定（画面左端に揃える） */
+.forecastTable td:first-child,
+.forecastTable th:first-child {
+  position: sticky;
+  left: 0;
+  background: #ffffff;
+  /* ★ 背景必須（透け防止） */
+  z-index: 5;
+  font-weight: bold;
+  border-right: 1px solid #ccc;
+}
+
+/* 左上のセル（項目＼時間）を最前面に */
+.forecastTable th:first-child {
+  z-index: 6;
+}
