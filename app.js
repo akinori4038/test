@@ -56,7 +56,6 @@ xmlns="http://www.w3.org/2000/svg">
     const hh = String(now.getHours()).padStart(2, "0");
     const min = String(now.getMinutes()).padStart(2, "0");
 
-    // ★ フォーマットを YYYY/MM/DD hh:mm に変更
     const formatted = `${yyyy}/${mm}/${dd} ${hh}:${min}`;
 
     const fc = document.getElementById("forecast");
@@ -87,12 +86,30 @@ xmlns="http://www.w3.org/2000/svg">
     return "❓";
   }
 
-  /* --- 風向 → 矢印 --- */
-  function windArrow(deg) {
+  /* --- SVG 風向矢印 --- */
+  const arrowSvg = `
+<svg width="20" height="20" viewBox="0 0 100 100">
+  <polygon points="50,10 90,90 10,90" fill="#333"/>
+</svg>`;
+
+  function windArrowSvg(deg) {
     if (deg === null || deg === undefined) return "？";
-    const dirs = ["↑", "↗", "→", "↘", "↓", "↙", "←", "↖"];
-    const index = Math.round(deg / 45) % 8;
-    return dirs[index];
+
+    // ★ 風下方向にする
+    const down = (deg + 180) % 360;
+
+    return `
+      <div style="
+        width:20px;
+        height:20px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        transform: rotate(${down}deg);
+      ">
+        ${arrowSvg}
+      </div>
+    `;
   }
 
   /* --- 天気＋海況 API --- */
@@ -115,7 +132,7 @@ xmlns="http://www.w3.org/2000/svg">
     }
   }
 
-  /* --- 3日分 × 1時間予報の表（縦横逆転＋アイコン対応） --- */
+  /* --- 3日分 × 1時間予報の表（縦横逆転＋SVG風向） --- */
   function updateForecastDisplay(weather, marine) {
     updateLastUpdateTime();
 
@@ -158,12 +175,11 @@ xmlns="http://www.w3.org/2000/svg">
         <tbody>
     `;
 
-    // ★ 行データ（天気アイコン・風向矢印・波向削除・うねり追加）
     const rows = [
       { label: "天気", data: weatherCode.map(c => weatherIcon(c)) },
       { label: "気温(℃)", data: temp },
       { label: "風速(m/s)", data: wind },
-      { label: "風向", data: windDir.map(d => windArrow(d)) },
+      { label: "風向", data: windDir.map(d => windArrowSvg(d)) },  // ★ SVG 矢印
       { label: "波高(m)", data: wave },
       { label: "うねり高(m)", data: swell },
       { label: "海面水温(℃)", data: sst }
