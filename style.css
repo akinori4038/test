@@ -1,3 +1,6 @@
+/* ============================================================
+   基本レイアウト
+============================================================ */
 html,
 body {
   margin: 0;
@@ -12,7 +15,9 @@ body {
   height: 100%;
 }
 
-/* --- タブ --- */
+/* ============================================================
+   タブ
+============================================================ */
 .tabs {
   display: flex;
   background: #f0f0f0;
@@ -34,42 +39,41 @@ body {
   border-bottom: 2px solid #0078d4;
 }
 
-/* --- 画面切り替え --- */
-.screen {
+/* ============================================================
+   シングルビュー方式（画面完全切り替え）
+============================================================ */
+.view {
   display: none;
-  flex: 1;
-  overflow-y: auto;
+  height: 100%;
+  width: 100%;
 }
 
-.screen.active {
-  display: flex;
-  flex-direction: column;
+.view.active {
+  display: block;
 }
 
 /* ============================================================
-   地図タブの高さ制御（天気タブを圧迫しないための決定版）
+   地図画面（mapScreen）
 ============================================================ */
-
-/* 地図タブ全体を縦レイアウトにする */
 #mapScreen {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  /* ← 天気タブと同じ高さ権を持つ */
+  height: 100%;
 }
 
-/* 地図部分は残りの高さをすべて使う */
 #mapScreen #map {
   flex: 1;
   width: 100%;
-  height: auto !important;
-  /* ← ★ これが最重要：高さ固定を禁止 */
+  height: auto;
   min-height: 0;
   /* ← flex 子要素の縮みを許可 */
 }
 
-/* 下部コントロールは高さ固定 */
-#mapScreen .controls {
+/* 下部コントロール */
+.controls {
+  padding: 8px 12px;
+  border-top: 1px solid #ddd;
+  background: #f8f8f8;
   flex-shrink: 0;
 }
 
@@ -124,7 +128,9 @@ body {
   white-space: pre-line;
 }
 
-/* --- 天気・海況画面 --- */
+/* ============================================================
+   天気・海況画面（あなたの添付CSSを完全復元）
+============================================================ */
 .forecastBox {
   padding: 10px;
 }
@@ -173,7 +179,6 @@ body {
   position: sticky;
   left: 0;
   background: #ffffff;
-  /* 背景色は必ず指定 */
   z-index: 5;
   font-weight: bold;
 }
@@ -187,7 +192,6 @@ body {
 .forecastTableWrapper {
   overflow-x: auto;
   padding: 0;
-  /* ★ 左端ズレの原因を解消 */
   margin: 0;
 }
 
@@ -196,25 +200,7 @@ body {
 .forecastTable th:first-child {
   position: sticky;
   left: 0;
-  background: #ffffff;
-  /* ★ 背景必須（透け防止） */
-  z-index: 5;
-  font-weight: bold;
-  border-right: 1px solid #ccc;
-}
-
-/* 左上のセル（項目＼時間）を最前面に */
-.forecastTable th:first-child {
-  z-index: 6;
-}
-
-/* 左側の項目列を固定（画面左端に揃える） */
-.forecastTable td:first-child,
-.forecastTable th:first-child {
-  position: sticky;
-  left: 0;
   width: 6ch;
-  /* ★ 全角3文字＋改行後の単位が収まる幅 */
   min-width: 6ch;
   max-width: 6ch;
   background: #ffffff;
@@ -234,7 +220,6 @@ body {
 .forecastTable td:first-child,
 .forecastTable th:first-child {
   background: #f0f4ff !important;
-  /* ← 好きな色に変更可能 */
 }
 
 /* ヘッダー（日時）の文字色を黒に */
@@ -246,12 +231,10 @@ body {
 .forecastTable thead th {
   background: #f0f4ff !important;
   color: #000 !important;
-  /* ← 文字色は黒で固定 */
 }
 
 /* 天気アイコンだけ大きくする（項目セルは除外） */
 .forecastTable tbody tr:nth-child(1) td:not(:first-child) {
   font-size: 28px;
-  /* ← 好きな大きさに調整 */
   line-height: 1.2;
 }
