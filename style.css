@@ -158,3 +158,28 @@ body {
 .forecastTable th:first-child {
   z-index: 6;
 }
+
+/* 左側の項目列を固定（画面左端に揃える） */
+.forecastTable td:first-child,
+.forecastTable th:first-child {
+  position: sticky;
+  left: 0;
+  width: 3ch;
+  /* ★ 3文字分の幅に最適化 */
+  min-width: 3ch;
+  max-width: 3ch;
+  background: #ffffff;
+  /* 背景必須（透け防止） */
+  z-index: 5;
+  font-weight: bold;
+  border-right: 1px solid #ccc;
+  text-align: left;
+  /* ★ 左寄せで見やすく */
+  padding-left: 4px;
+  /* ★ 少し余白を入れると綺麗 */
+}
+
+/* 左上のセル（項目＼時間）を最前面に */
+.forecastTable th:first-child {
+  z-index: 6;
+}
