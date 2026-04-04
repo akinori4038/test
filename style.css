@@ -119,35 +119,32 @@ body {
 }
 
 /* ============================================================
-   天気・海況画面専用 CSS（完全復元＋衝突ゼロ）
+   天気・海況テーブル（完全決定版）
 ============================================================ */
 
-.forecastBox {
-  padding: 10px;
-}
-
-/* --- 予報テーブル外枠（横スクロール領域） --- */
+/* 横スクロール領域（左端ズレ防止のため padding は 0） */
 .forecastTableWrapper {
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   padding: 0;
-  /* ← 左端ズレを完全に防ぐ */
+  /* ← 左端ズレの原因を完全除去 */
   margin: 0;
   flex-shrink: 0;
 }
 
-/* --- テーブル本体 --- */
+/* テーブル本体 */
 .forecastTable {
   border-collapse: collapse;
   width: 100%;
-  min-width: 700px;
+  min-width: 1200px;
+  /* ← ★ 時間列が詰まらないように最低幅を拡大 */
   font-size: 14px;
   table-layout: fixed;
   /* ← 列幅を安定させる（重要） */
 }
 
-/* --- 見出し（日時） --- */
+/* 見出し（日時） */
 .forecastTable th {
   background: #0078d4;
   color: #fff;
@@ -155,28 +152,34 @@ body {
   position: sticky;
   top: 0;
   z-index: 3;
+  white-space: nowrap;
+  /* ← 日時が折り返されない */
 }
 
-/* --- データセル --- */
+/* データセル */
 .forecastTable td {
   padding: 6px;
   border-bottom: 1px solid #ddd;
+  white-space: nowrap;
+  /* ← 数値が折り返されない */
+  text-align: center;
 }
 
-/* --- 偶数行の背景 --- */
+/* 偶数行の背景 */
 .forecastTable tr:nth-child(even) {
   background: #f5f5f5;
 }
 
-/* --- 左側の項目列を固定（画面左端に揃える） --- */
+/* --- 左側の項目列（全角3文字＋単位2行目） --- */
 .forecastTable td:first-child,
 .forecastTable th:first-child {
   position: sticky;
   left: 0;
   width: 6ch;
-  /* ← 全角3文字幅 */
+  /* ← 全角3文字幅（半角6文字） */
   min-width: 6ch;
   max-width: 6ch;
+
   background: #f0f4ff !important;
   /* ← 薄青背景（復元） */
   z-index: 5;
@@ -184,6 +187,10 @@ body {
   border-right: 1px solid #ccc;
   text-align: left;
   padding-left: 4px;
+
+  white-space: normal;
+  /* ← ★ ここが重要！1行目は nowrap ではない */
+  line-height: 1.2;
 }
 
 /* 左上セル（項目＼時間）を最前面に */
@@ -195,6 +202,16 @@ body {
 .forecastTable thead th {
   background: #f0f4ff !important;
   color: #000 !important;
+}
+
+/* 単位（2行目） */
+.forecastTable .unit {
+  display: block;
+  /* ← 強制的に2行目にする */
+  font-size: 12px;
+  margin-top: 2px;
+  white-space: nowrap;
+  /* ← 単位は折り返さない */
 }
 
 /* 天気アイコンだけ大きくする */
