@@ -106,12 +106,15 @@ xmlns="http://www.w3.org/2000/svg">
     speed = Number(speed);
     const down = (deg + 180) % 360;
 
-    let color = "#4da3ff";
-    if (speed >= 4 && speed < 7) color = "#3cb371";
+    let color = "#4da3ff"; // デフォルト（2〜3m/s）
+
+    // ★ 1m/s 以下はグレー
+    if (speed < 1) color = "#999999";
+    else if (speed >= 1 && speed < 4) color = "#4da3ff";
+    else if (speed >= 4 && speed < 7) color = "#3cb371";
     else if (speed >= 7 && speed < 10) color = "#ffa500";
     else if (speed >= 10 && speed < 20) color = "#ff4500";
     else if (speed >= 20) color = "#8000ff";
-
     const arrowSvg = `
       <svg width="22" height="22" viewBox="0 0 100 100">
         <polygon points="50,5 70,95 30,95" fill="${color}"/>
