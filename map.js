@@ -9,8 +9,9 @@ let waypoint = null;
 let waypointMarker = null;
 let waypointLine = null;
 
-/* --- トラッキング状態（軌跡ON/OFF + 中央固定ON/OFF） --- */
-let isTracking = true;
+/* --- 状態フラグ --- */
+let isTracking = true;   // 中央固定 ON/OFF
+let isPathOn = false;    // 軌跡 ON/OFF（初期OFF）
 
 /* --- カヤック SVG アイコン --- */
 const kayakSvg = `<svg width="60" height="60" viewBox="0 0 100 100"
@@ -21,7 +22,7 @@ xmlns="http://www.w3.org/2000/svg">
       <stop offset="50%" stop-color="#1fb5ad"/>
       <stop offset="100%" stop-color="#0e7f79"/>
     </linearGradient>
-    <linearGradient id="cockpitGrad" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id="cockpitGrad" x1="0" y1="0" x2="0" y1="1">
       <stop offset="0%" stop-color="#777"/>
       <stop offset="100%" stop-color="#222"/>
     </linearGradient>
@@ -86,7 +87,8 @@ export function initMap() {
   let marker = null;
   let trackLine = L.polyline([], { color: "red", weight: 3 }).addTo(map);
 
-  const locBtn = document.getElementById("locBtn");
+  const trackBtn = document.getElementById("trackBtn");
+  const pathBtn = document.getElementById("pathBtn");
   const wpClearBtn = document.getElementById("wpClearBtn");
   const navInfo = document.getElementById("navInfo");
 
@@ -153,11 +155,14 @@ export function initMap() {
       marker.setRotationAngle(heading || 0);
     }
 
-    /* --- トラッキング中なら軌跡を描く --- */
-    if (isTracking) {
+    /* --- 軌跡 ON のときだけ描く --- */
+    if (isPathOn) {
       trackCoords.push([lat, lng]);
       trackLine.setLatLngs(trackCoords);
+    }
 
+    /* --- 中央固定 ON のときだけ panTo --- */
+    if (isTracking) {
       map.panTo([lat, lng], { animate: false });
     }
 
@@ -200,19 +205,35 @@ export function initMap() {
     timeout: 10000
   });
 
-  /* --- トラッキングボタン（軌跡ON/OFF + 中央固定ON/OFF） --- */
-  locBtn.textContent = "トラッキング中";
-  locBtn.style.background = "#d40000";
+  /* --- トラッキングボタン（中央固定 ON/OFF） --- */
+  trackBtn.textContent = "トラッキング中";
+  trackBtn.style.background = "#d40000";
 
-  locBtn.addEventListener("click", () => {
+  trackBtn.addEventListener("click", () => {
     isTracking = !isTracking;
 
     if (isTracking) {
-      locBtn.textContent = "トラッキング中";
-      locBtn.style.background = "#d40000";
+      trackBtn.textContent = "トラッキング中";
+      trackBtn.style.background = "#d40000";
     } else {
-      locBtn.textContent = "トラッキング停止";
-      locBtn.style.background = "#0078d4";
+      trackBtn.textContent = "トラッキング停止";
+      trackBtn.style.background = "#0078d4";
+    }
+  });
+
+  /* --- 軌跡ボタン（ON/OFF） --- */
+  pathBtn.textContent = "軌跡OFF";
+  pathBtn.style.background = "#888";
+
+  pathBtn.addEventListener("click", () => {
+    isPathOn = !isPathOn;
+
+    if (isPathOn) {
+      pathBtn.textContent = "軌跡ON";
+      pathBtn.style.background = "#0078d4";
+    } else {
+      pathBtn.textContent = "軌跡OFF";
+      pathBtn.style.background = "#888";
     }
   });
 
