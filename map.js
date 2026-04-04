@@ -4,6 +4,11 @@ import { renderForecast } from "./forecastTable.js";
 /* --- 追跡用の配列（lat, lng のみ） --- */
 export let trackCoords = [];
 
+/* --- ウェイポイント --- */
+let waypoint = null;
+let waypointMarker = null;
+let waypointLine = null;
+
 /* --- カヤック SVG アイコン --- */
 const kayakSvg = `<svg width="60" height="60" viewBox="0 0 100 100"
 xmlns="http://www.w3.org/2000/svg">
@@ -37,13 +42,39 @@ const kayakIcon = L.icon({
   iconAnchor: [38, 38],
 });
 
+/* --- 距離計算（m） --- */
+function calcDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const toRad = (d) => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/* --- 方位計算（°） --- */
+function calcBearing(lat1, lon1, lat2, lon2) {
+  const toRad = (d) => d * Math.PI / 180;
+  const toDeg = (r) => r * 180 / Math.PI;
+
+  const y = Math.sin(toRad(lon2 - lon1)) * Math.cos(toRad(lat2));
+  const x =
+    Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+    Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.cos(toRad(lon2 - lon1));
+
+  return (toDeg(Math.atan2(y, x)) + 360) % 360;
+}
+
 /* --- map.js のメイン --- */
 export function initMap() {
 
-  /* --- 地図初期化（ズーム17に変更） --- */
+  /* --- 地図初期化（ズーム17） --- */
   const map = L.map("map").setView([35.681236, 139.767125], 17);
 
-  /* ★ app.js の activateTab() が参照するため必須 */
   window._leaflet_map_instance = map;
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -57,14 +88,30 @@ export function initMap() {
 
   const locBtn = document.getElementById("locBtn");
   const status = document.getElementById("status");
+  const navInfo = document.getElementById("navInfo");  // ← index.html に追加する
 
-  /* --- 位置更新（lat,lng のみ） --- */
+  /* --- ウェイポイント設定（地図タップ） --- */
+  map.on("click", (e) => {
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+
+    waypoint = [lat, lng];
+
+    if (waypointMarker) map.removeLayer(waypointMarker);
+    waypointMarker = L.marker([lat, lng], { color: "green" }).addTo(map);
+
+    if (waypointLine) map.removeLayer(waypointLine);
+    waypointLine = L.polyline([], { color: "blue", weight: 2 }).addTo(map);
+
+    navInfo.textContent = "ウェイポイント設定済み";
+  });
+
+  /* --- 位置更新 --- */
   async function onLocationUpdate(pos) {
     const lat = pos.coords.latitude;
     const lng = pos.coords.longitude;
     const heading = pos.coords.heading;
 
-    /* --- マーカー更新 --- */
     if (!marker) {
       marker = L.marker([lat, lng], {
         icon: kayakIcon,
@@ -76,11 +123,26 @@ export function initMap() {
       marker.setRotationAngle(heading || 0);
     }
 
-    /* --- 軌跡更新 --- */
     trackCoords.push([lat, lng]);
     trackLine.setLatLngs(trackCoords);
 
-    /* --- 地図タブがアクティブの時だけ天気更新 --- */
+    /* --- ウェイポイントがある場合、距離・方位・直線を更新 --- */
+    if (waypoint) {
+      const [wlat, wlng] = waypoint;
+
+      const dist = calcDistance(lat, lng, wlat, wlng);
+      const bearing = calcBearing(lat, lng, wlat, wlng);
+
+      const distStr = dist >= 1000
+        ? `${(dist / 1000).toFixed(2)} km`
+        : `${dist.toFixed(0)} m`;
+
+      navInfo.textContent = `距離: ${distStr}　方位: ${bearing.toFixed(1)}°`;
+
+      waypointLine.setLatLngs([[lat, lng], [wlat, wlng]]);
+    }
+
+    /* --- 天気更新 --- */
     const isMapActive = document.getElementById("mapScreen").classList.contains("active");
     if (isMapActive) {
       map.panTo([lat, lng], { animate: false });
@@ -96,7 +158,7 @@ export function initMap() {
     status.textContent = "位置情報エラー: " + err.message;
   }
 
-  /* --- ★ 起動時に現在位置を1回取得してセンタリング --- */
+  /* --- 起動時に追従開始 --- */
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       const lat = pos.coords.latitude;
@@ -104,9 +166,7 @@ export function initMap() {
 
       map.setView([lat, lng], 17);
 
-      marker = L.marker([lat, lng], {
-        icon: kayakIcon
-      }).addTo(map);
+      marker = L.marker([lat, lng], { icon: kayakIcon }).addTo(map);
 
       trackCoords.push([lat, lng]);
       trackLine.setLatLngs(trackCoords);
@@ -117,17 +177,14 @@ export function initMap() {
     { enableHighAccuracy: true }
   );
 
-  /* --- ★ 起動直後から追従開始（watchPosition 自動ON） --- */
   watchId = navigator.geolocation.watchPosition(onLocationUpdate, onError, {
     enableHighAccuracy: true,
     maximumAge: 0,
     timeout: 10000
   });
 
-  /* ボタンの初期状態を「追従停止」にする */
   locBtn.textContent = "追従停止";
 
-  /* --- 追従トグル（手動で停止/再開） --- */
   locBtn.addEventListener("click", () => {
     if (watchId !== null) {
       navigator.geolocation.clearWatch(watchId);
@@ -147,7 +204,6 @@ export function initMap() {
     status.textContent = "追従中…";
   });
 
-  /* --- タブ切り替え時の map.invalidateSize --- */
   document.getElementById("tabMap").addEventListener("click", () => {
     setTimeout(() => map.invalidateSize(), 50);
   });
