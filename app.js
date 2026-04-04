@@ -211,8 +211,8 @@ xmlns="http://www.w3.org/2000/svg">
       { label: "風速(m/s)", data: wind },
       { label: "風向", data: windDir.map((d, i) => windArrowSvg(d, wind[i])) },
       { label: "波高(m)", data: wave },
-      { label: "うねり高(m)", data: swell },
-      { label: "海面水温(℃)", data: sst }
+      { label: "うねり(m)", data: swell },
+      { label: "海水温(℃)", data: sst }
     ];
 
     rows.forEach(row => {
