@@ -1,7 +1,7 @@
 import { fetchWeatherMarine } from "./forecast.js";
 import { renderForecast } from "./forecastTable.js";
 
-/* --- 追跡用の配列（lat, lng, ele, time） --- */
+/* --- 追跡用の配列（lat, lng のみ） --- */
 export let trackCoords = [];
 
 /* --- カヤック SVG アイコン（分割前仕様を完全再現） --- */
@@ -40,7 +40,7 @@ const kayakIcon = L.icon({
 /* --- map.js のメイン --- */
 export function initMap() {
 
-  /* --- 地図初期化 --- */
+  /* --- 地図初期化（分割前仕様） --- */
   const map = L.map("map").setView([35.681236, 139.767125], 5);
 
   /* ★ app.js の activateTab() が参照するため必須 */
@@ -58,14 +58,13 @@ export function initMap() {
   const locBtn = document.getElementById("locBtn");
   const status = document.getElementById("status");
 
-  /* --- 位置更新（高度＋タイムスタンプは保持） --- */
+  /* --- 位置更新（lat,lng のみ使用） --- */
   async function onLocationUpdate(pos) {
     const lat = pos.coords.latitude;
     const lng = pos.coords.longitude;
-    const ele = pos.coords.altitude ?? 0;
-    const time = new Date().toISOString();
     const heading = pos.coords.heading;
 
+    /* --- マーカー更新 --- */
     if (!marker) {
       marker = L.marker([lat, lng], {
         icon: kayakIcon,
@@ -77,8 +76,8 @@ export function initMap() {
       marker.setRotationAngle(heading || 0);
     }
 
-    /* ★ 軌跡表示のため trackCoords は残す */
-    trackCoords.push([lat, lng, ele, time]);
+    /* --- 軌跡更新（元の仕様に戻す：lat,lng のみ） --- */
+    trackCoords.push([lat, lng]);
     trackLine.setLatLngs(trackCoords);
 
     /* --- 地図タブがアクティブの時だけ天気更新 --- */
@@ -97,7 +96,7 @@ export function initMap() {
     status.textContent = "位置情報エラー: " + err.message;
   }
 
-  /* --- 追従トグル --- */
+  /* --- 追従トグル（分割前仕様） --- */
   locBtn.addEventListener("click", () => {
     if (watchId !== null) {
       navigator.geolocation.clearWatch(watchId);
@@ -117,9 +116,9 @@ export function initMap() {
     status.textContent = "追従中…";
   });
 
-  /* --- GPX保存機能は削除済み --- */
+  /* --- GPX保存機能は完全削除済み --- */
 
-  /* --- タブ切り替え時の map.invalidateSize --- */
+  /* --- タブ切り替え時の map.invalidateSize（分割前仕様） --- */
   document.getElementById("tabMap").addEventListener("click", () => {
     setTimeout(() => map.invalidateSize(), 50);
   });
