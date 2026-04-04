@@ -78,6 +78,7 @@ body {
 /* --- 天気・海況画面 --- */
 .forecastBox {
   padding: 10px;
+  /* ← 画面全体の余白はここで確保 */
 }
 
 /* --- 予報テーブル --- */
@@ -85,7 +86,8 @@ body {
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
-  padding: 10px;
+  padding: 0;
+  /* ← 左端ズレの原因だった padding を削除 */
   margin: 0;
   flex-shrink: 0;
 }
