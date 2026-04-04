@@ -47,27 +47,30 @@ body {
 }
 
 /* ============================================================
-   地図タブ用（既存レイアウトを崩さない範囲で追加）
+   地図タブの高さ制御（天気タブを圧迫しないための決定版）
 ============================================================ */
 
-/* mapScreen 全体を縦レイアウトにする */
+/* 地図タブ全体を縦レイアウトにする */
 #mapScreen {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  /* ← 天気タブと同じ高さ権を持つ */
 }
 
-/* --- 地図 --- */
-#map {
+/* 地図部分は残りの高さをすべて使う */
+#mapScreen #map {
   flex: 1;
   width: 100%;
-  /* 高さは flex に任せる。100vh は使わない */
+  height: auto !important;
+  /* ← ★ これが最重要：高さ固定を禁止 */
+  min-height: 0;
+  /* ← flex 子要素の縮みを許可 */
 }
 
-/* --- 下部コントロール --- */
-.controls {
-  padding: 8px 12px;
-  border-top: 1px solid #ddd;
-  background: #f8f8f8;
+/* 下部コントロールは高さ固定 */
+#mapScreen .controls {
+  flex-shrink: 0;
 }
 
 .btn {
