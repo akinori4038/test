@@ -22,7 +22,7 @@ xmlns="http://www.w3.org/2000/svg">
       <stop offset="50%" stop-color="#1fb5ad"/>
       <stop offset="100%" stop-color="#0e7f79"/>
     </linearGradient>
-    <linearGradient id="cockpitGrad" x1="0" y1="0" x2="0" y1="1">
+    <linearGradient id="cockpitGrad" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#777"/>
       <stop offset="100%" stop-color="#222"/>
     </linearGradient>
