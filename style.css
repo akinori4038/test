@@ -192,3 +192,10 @@ body {
 .forecastTable th {
   color: #000 !important;
 }
+
+/* 左の項目列と同じ背景色をヘッダーにも適用 */
+.forecastTable thead th {
+  background: #f0f4ff !important;
+  color: #000 !important;
+  /* ← 文字色は黒で固定 */
+}
