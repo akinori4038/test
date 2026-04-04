@@ -250,7 +250,7 @@ xmlns="http://www.w3.org/2000/svg">
         }
 
         const highlightStyle = (i === highlightIndex)
-          ? `border-top:2px solid #e0b800; border-bottom:2px solid #e0b800;`
+          ? `border-left:2px solid #e0b800; border-right:2px solid #e0b800;`
           : "";
 
         html += `<td style="${extraStyle} ${highlightStyle} ${textColor}">${row.data[i]}</td>`;
