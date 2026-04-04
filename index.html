@@ -24,17 +24,21 @@
 
     <!-- ★ 地図画面 -->
     <div id="mapScreen" class="screen active">
-      <div id="map"></div>
+
+      <div id="map">
+
+        <!-- ★ 中央固定チェックボックス（地図上に配置） -->
+        <label id="trackCheckbox" class="mapCheckbox">
+          <input type="checkbox" id="trackChk" checked>
+          中央固定
+        </label>
+
+      </div>
 
       <div class="controls">
 
-        <!-- ★ 中央固定（トラッキング）ボタン -->
-        <button id="trackBtn" class="btn" type="button">
-          トラッキング中
-        </button>
-
         <!-- ★ 軌跡 ON/OFF ボタン（初期OFF） -->
-        <button id="pathBtn" class="btn" type="button" style="margin-left:8px;">
+        <button id="pathBtn" class="btn" type="button">
           軌跡OFF
         </button>
 

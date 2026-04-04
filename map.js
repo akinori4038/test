@@ -13,7 +13,7 @@ let waypointLine = null;
 let isTracking = true;   // 中央固定 ON/OFF
 let isPathOn = false;    // 軌跡 ON/OFF（初期OFF）
 
-/* --- カヤック SVG アイコン --- */
+/* --- カヤック SVG アイコン（誤記修正済み） --- */
 const kayakSvg = `<svg width="60" height="60" viewBox="0 0 100 100"
 xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -22,20 +22,26 @@ xmlns="http://www.w3.org/2000/svg">
       <stop offset="50%" stop-color="#1fb5ad"/>
       <stop offset="100%" stop-color="#0e7f79"/>
     </linearGradient>
+
     <linearGradient id="cockpitGrad" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#777"/>
       <stop offset="100%" stop-color="#222"/>
     </linearGradient>
+
     <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.45)"/>
     </filter>
   </defs>
+
   <path d="M50 3 C56 22, 60 40, 60 50 C60 60, 56 78, 50 97 C44 78, 40 60, 40 50 C40 40, 44 22, 50 3 Z"
         fill="url(#kayakBody)" stroke="#0a5f5a" stroke-width="3" filter="url(#dropShadow)"/>
+
   <path d="M50 6 C55 22, 58 40, 58 50 C58 60, 55 78, 50 94"
         stroke="rgba(255,255,255,0.35)" stroke-width="3" fill="none"/>
+
   <ellipse cx="50" cy="50" rx="5" ry="15"
            fill="url(#cockpitGrad)" stroke="#000" stroke-width="3"/>
+
   <line x1="50" y1="3" x2="50" y2="22" stroke="#ffffff" stroke-width="2" opacity="0.6"/>
   <line x1="50" y1="78" x2="50" y2="97" stroke="#ffffff" stroke-width="2" opacity="0.6"/>
 </svg>`;
@@ -87,12 +93,13 @@ export function initMap() {
   let marker = null;
   let trackLine = L.polyline([], { color: "red", weight: 3 }).addTo(map);
 
-  const trackBtn = document.getElementById("trackBtn");
+  const trackChk = document.getElementById("trackChk");
   const pathBtn = document.getElementById("pathBtn");
   const wpClearBtn = document.getElementById("wpClearBtn");
   const navInfo = document.getElementById("navInfo");
 
-  /* --- WP削除ボタン初期状態 --- */
+  /* --- 初期状態 --- */
+  isTracking = trackChk.checked;  // 中央固定
   wpClearBtn.style.background = "#888";
   wpClearBtn.disabled = true;
 
@@ -205,20 +212,9 @@ export function initMap() {
     timeout: 10000
   });
 
-  /* --- トラッキングボタン（中央固定 ON/OFF） --- */
-  trackBtn.textContent = "トラッキング中";
-  trackBtn.style.background = "#d40000";
-
-  trackBtn.addEventListener("click", () => {
-    isTracking = !isTracking;
-
-    if (isTracking) {
-      trackBtn.textContent = "トラッキング中";
-      trackBtn.style.background = "#d40000";
-    } else {
-      trackBtn.textContent = "トラッキング停止";
-      trackBtn.style.background = "#0078d4";
-    }
+  /* --- 中央固定チェックボックス --- */
+  trackChk.addEventListener("change", () => {
+    isTracking = trackChk.checked;
   });
 
   /* --- 軌跡ボタン（ON/OFF） --- */
