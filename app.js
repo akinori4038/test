@@ -86,22 +86,30 @@ xmlns="http://www.w3.org/2000/svg">
     return "❓";
   }
 
-  /* --- SVG 風向矢印 --- */
-  const arrowSvg = `
-<svg width="20" height="20" viewBox="0 0 100 100">
-  <polygon points="50,10 90,90 10,90" fill="#333"/>
-</svg>`;
-
-  function windArrowSvg(deg) {
+  /* --- 鋭角 SVG 風向矢印（風速で色分け） --- */
+  function windArrowSvg(deg, speed) {
     if (deg === null || deg === undefined) return "？";
 
     // ★ 風下方向にする
     const down = (deg + 180) % 360;
 
+    // ★ 風速で色分け
+    let color = "#4da3ff"; // 弱風（青）
+    if (speed >= 4 && speed <= 7) color = "#3cb371";      // 中風（緑）
+    else if (speed >= 8 && speed <= 12) color = "#ffa500"; // 強風（橙）
+    else if (speed >= 13) color = "#ff4500";               // 非常に強い風（赤）
+
+    // ★ 鋭角で細長い矢印
+    const arrowSvg = `
+      <svg width="22" height="22" viewBox="0 0 100 100">
+        <polygon points="50,5 70,95 30,95" fill="${color}"/>
+      </svg>
+    `;
+
     return `
       <div style="
-        width:20px;
-        height:20px;
+        width:22px;
+        height:22px;
         display:flex;
         align-items:center;
         justify-content:center;
@@ -179,7 +187,7 @@ xmlns="http://www.w3.org/2000/svg">
       { label: "天気", data: weatherCode.map(c => weatherIcon(c)) },
       { label: "気温(℃)", data: temp },
       { label: "風速(m/s)", data: wind },
-      { label: "風向", data: windDir.map(d => windArrowSvg(d)) },  // ★ SVG 矢印
+      { label: "風向", data: windDir.map((d, i) => windArrowSvg(d, wind[i])) },  // ★ SVG矢印＋色分け
       { label: "波高(m)", data: wave },
       { label: "うねり高(m)", data: swell },
       { label: "海面水温(℃)", data: sst }
