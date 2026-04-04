@@ -165,18 +165,17 @@ body {
   position: sticky;
   left: 0;
   width: 3ch;
-  /* ★ 3文字分の幅に最適化 */
+  /* ★ 横に3文字分 */
   min-width: 3ch;
   max-width: 3ch;
+  white-space: nowrap;
+  /* ★ 折り返し禁止 → 縦に3行にならない */
   background: #ffffff;
-  /* 背景必須（透け防止） */
   z-index: 5;
   font-weight: bold;
   border-right: 1px solid #ccc;
   text-align: left;
-  /* ★ 左寄せで見やすく */
   padding-left: 4px;
-  /* ★ 少し余白を入れると綺麗 */
 }
 
 /* 左上のセル（項目＼時間）を最前面に */
